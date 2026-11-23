@@ -260,3 +260,10 @@ El renderizador de imágenes de partido para Discord (`lib/match-card.tsx`) comp
 - **Don't** añadir sombras a filas, chips o botones secundarios; la única sombra es la de la puerta.
 - **Don't** usar otra familia tipográfica que Barlow / Barlow Condensed.
 - **Don't** mostrar cifras, testimonios o logros que no salgan de partidos reales.
+
+
+## Cambios 2026-11-23
+
+- Se quitó la fila de copiar el nombre y los chips de plataforma (el club es multiplataforma): bajo el nombre va solo la línea "Club de EA FC 27" (label 20px, tinta plata). Las secciones de copiar y chips de arriba quedan obsoletas.
+- Bajo la puerta del Discord hay botones secundarios de contorno (hilo, 14px de radio, 50px de alto): Twitch con icono violeta y, cuando exista el enlace, WhatsApp con icono verde. Nunca en blanco: el blanco pleno sigue siendo solo del Discord.
+- La ruta pasa a: buscar en el juego, Discord, Twitch.

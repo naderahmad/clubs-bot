@@ -26,7 +26,7 @@ asistencia y disciplina, algo que las webs genéricas de estadísticas (p. ej. m
 
 ## Operating Context
 
-- Club en EA FC 27, PS5 con crossplay, `clubId` 621507, plataforma `common-gen5`. Muchos partidos de liga con ~5 humanos.
+- Club en EA FC 27, multiplataforma (no se muestra en la web), `clubId` 621507, plataforma `common-gen5`. Muchos partidos de liga con ~5 humanos.
 - Discord oficial: servidor "STARLINK FCX / TITANS CR1OLLO", invitación permanente https://discord.gg/Bc3BVhmJC2
   (157 miembros el 2026-11-23). Los resúmenes de partido se publican en #📪│historial.
 - Zona horaria del club UTC-04:00 (Venezuela).
@@ -36,7 +36,7 @@ asistencia y disciplina, algo que las webs genéricas de estadísticas (p. ej. m
 - Next.js en Vercel; Supabase es la fuente de verdad. Vercel no puede llamar a la API de EA (403 de Akamai): la web solo
   lee lo que el sync de GitHub Actions guardó (tablas `matches`, `match_players`).
 - EA no da caras de los Pro; el escudo del club en el juego es un escudo genérico de EA. El logo propio está en `public/`.
-- **Pendiente:** enlace del stream (plataforma y URL no confirmadas).
+- Stream: https://www.twitch.tv/enmanuelerc. **Pendiente:** enlace del grupo de WhatsApp (variable `WHATSAPP_URL`).
 
 ## Brand Commitments
 

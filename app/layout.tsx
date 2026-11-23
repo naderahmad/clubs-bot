@@ -10,7 +10,7 @@ const url = process.env.APP_URL?.replace(/\/$/, "") || "https://clubs-bot.vercel
 export const metadata: Metadata = {
   metadataBase: new URL(url),
   title: "STARLINK FCX · Club de EA FC 27",
-  description: "Búscanos en EA FC 27 → Clubs como STARLINK FCX (PS5, crossplay) y entra al Discord del club.",
+  description: "Búscanos en EA FC 27 → Clubs como STARLINK FCX, entra al Discord del club y míranos en Twitch.",
   openGraph: {
     title: "STARLINK FCX · Club de EA FC 27",
     description: "Nombre exacto del club, resultados reales y el Discord para unirte.",

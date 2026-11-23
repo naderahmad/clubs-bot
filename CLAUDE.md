@@ -68,8 +68,12 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
 - `scripts/sync.ts` → sync que corre en GitHub Actions (`--dry` = solo EA).
 - `app/api/cron/sync/route.ts` → sync vía HTTP protegido con `CRON_SECRET` (solo diagnóstico: EA bloquea Vercel).
 - `lib/sync.ts` → guardar partidos, rojas, cerrar convocatorias, recordatorios.
+- `lib/match-embed.ts` → resumen de cada partido nuevo como embed (resultado, MVP, goles/asistencias, podio por rating,
+  comparativa de equipos desde `aggregate`, plantilla por posición, disciplina). EA **no** trae faltas ni amarillas del juego:
+  solo `redcards`; las rojas por abandono son del bot.
+- `public/escudo.jpg` (thumbnail de los embeds vía `APP_URL`), `public/escudo-cuadrado.png` (avatar), `app/icon.png` (favicon).
 - `lib/ea.ts`, `lib/discord.ts`, `lib/convocatoria.ts`, `lib/commands.ts`, `lib/time.ts`.
 - `supabase/schema.sql`, `scripts/register-commands.ts`, `scripts/test-ea.ts`, `.github/workflows/cron.yml`.
 
 ## Comandos
-`npm run dev` · `npm run build` · `npm run typecheck` · `npm run test:ea` · `npm run sync` (`-- --dry`) · `npm run register`
+`npm run dev` · `npm run build` · `npm run typecheck` · `npm run test:ea` · `npm run sync` (`-- --dry`) · `npm run preview:match` (`-- <matchId>`) · `npm run register`

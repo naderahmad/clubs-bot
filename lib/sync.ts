@@ -2,7 +2,7 @@ import { env } from "./env";
 import { db } from "./supabase";
 import { getMatches, getOverallStats, parseResult, type EaMatch, type EaMatchType } from "./ea";
 import { postMessage, mention, ts, NO_PINGS } from "./discord";
-import { buildMatchEmbed, type Abandono } from "./match-embed";
+import { buildMatchEmbed, postMatchEmbed, type Abandono } from "./match-embed";
 
 const MATCH_TYPES: EaMatchType[] = ["leagueMatch", "friendlyMatch"];
 interface Summary {
@@ -202,10 +202,7 @@ async function processMatch(m: EaMatch, type: EaMatchType, clubId: string): Prom
 
   const embed = buildMatchEmbed(m, type, clubId, { appUrl: env.appUrl, crestUrl: env.crestUrl, abandonos });
   // Precalentar la imagen para que Discord la encuentre ya generada (si falla, el embed sale igual)
-  // La imagen se genera ANTES de publicar: si Discord la pide y tarda, el mensaje sale sin imagen
-  const ready = await prewarmImage(embed.image.url);
-  if (!ready) console.log(`::warning::La imagen del partido ${m.matchId} no se pudo generar; se publica sin esperar`);
-  await postMessage(env.discordChannelId, { embeds: [embed], allowed_mentions: NO_PINGS });
+  await postMatchEmbed(embed, m.matchId);
   return abandonos.length;
 }
 
@@ -320,20 +317,3 @@ async function syncClubStatus(clubId: string) {
   if (error) throw error;
 }
 
-/** Pide la imagen hasta 3 veces y comprueba que es un PNG real (así queda en la caché de Vercel para Discord). */
-async function prewarmImage(url: string) {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
-      if (res.ok && res.headers.get("content-type")?.startsWith("image/")) {
-        await res.arrayBuffer();
-        return true;
-      }
-      console.log(`imagen intento ${attempt}: HTTP ${res.status}`);
-    } catch (e) {
-      console.log(`imagen intento ${attempt}: ${String(e)}`);
-    }
-    await new Promise((r) => setTimeout(r, 3000 * attempt));
-  }
-  return false;
-}

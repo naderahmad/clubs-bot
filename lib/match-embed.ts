@@ -3,7 +3,8 @@
  * de los jugadores (la genera /api/match/<id>/image en Vercel, ver lib/match-card.tsx).
  */
 import type { EaMatch, EaMatchType } from "./ea";
-import { ts } from "./discord";
+import { env } from "./env";
+import { postMessage, ts, NO_PINGS } from "./discord";
 import { matchView, TYPE_LABEL } from "./match-data";
 
 export interface Abandono {
@@ -59,4 +60,38 @@ export function buildMatchEmbed(
     footer: { text: `EA FC 27 Clubs · partido ${v.matchId}` },
     timestamp: v.playedAt.toISOString(),
   };
+}
+
+/**
+ * Descarga la imagen del partido (la genera Vercel: ~13 s en frío) esperando lo necesario, hasta 3 intentos.
+ * No se puede dejar que Discord la pida por URL: la caché de Vercel es por región, Discord suele pedirla
+ * desde otra donde aún no existe y no espera más de ~10 s → el mensaje salía sin imagen.
+ */
+export async function fetchMatchImage(url: string): Promise<ArrayBuffer | null> {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(45_000) });
+      if (res.ok && res.headers.get("content-type")?.startsWith("image/")) return await res.arrayBuffer();
+      console.log(`imagen intento ${attempt}: HTTP ${res.status}`);
+    } catch (err) {
+      console.log(`imagen intento ${attempt}: ${String(err)}`);
+    }
+    await new Promise((r) => setTimeout(r, 3000 * attempt));
+  }
+  return null;
+}
+
+/** Publica el resumen con la imagen ADJUNTA al mensaje. Si no se pudo generar, sale sin ella y avisa en el log. */
+export async function postMatchEmbed(embed: ReturnType<typeof buildMatchEmbed>, matchId: string, channelId = env.discordChannelId) {
+  const png = await fetchMatchImage(embed.image.url);
+  if (!png) {
+    console.log(`::warning::La imagen del partido ${matchId} no se pudo generar; se publica sin imagen`);
+    return postMessage(channelId, { embeds: [{ ...embed, image: undefined }], allowed_mentions: NO_PINGS });
+  }
+  const name = `partido-${matchId}.png`;
+  return postMessage(
+    channelId,
+    { embeds: [{ ...embed, image: { url: `attachment://${name}` } }], allowed_mentions: NO_PINGS },
+    [{ name, data: png }],
+  );
 }

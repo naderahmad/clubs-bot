@@ -7,8 +7,7 @@
 import "dotenv/config";
 import { db } from "../lib/supabase";
 import { env } from "../lib/env";
-import { postMessage, NO_PINGS } from "../lib/discord";
-import { buildMatchEmbed } from "../lib/match-embed";
+import { buildMatchEmbed, postMatchEmbed } from "../lib/match-embed";
 import type { EaMatch, EaMatchType } from "../lib/ea";
 
 const id = process.argv[2];
@@ -19,11 +18,5 @@ if (error || !data?.length) throw error ?? new Error("Partido no encontrado");
 
 const row = data[0];
 const embed = buildMatchEmbed(row.raw as EaMatch, row.match_type as EaMatchType, env.eaClubId, { appUrl: env.appUrl, crestUrl: env.crestUrl });
-for (let i = 1; i <= 3; i++) {
-  const res = await fetch(embed.image.url, { signal: AbortSignal.timeout(30_000) }).catch(() => null);
-  if (res?.ok && res.headers.get("content-type")?.startsWith("image/")) break;
-  console.log(`imagen intento ${i}: ${res?.status ?? "sin respuesta"}`);
-  if (i === 3) throw new Error("La imagen no se pudo generar; no publico");
-}
-await postMessage(env.discordChannelId, { embeds: [embed], allowed_mentions: NO_PINGS });
+await postMatchEmbed(embed, row.match_id);
 console.log(`✅ Publicado el resumen del partido ${row.match_id}`);

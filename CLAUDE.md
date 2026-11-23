@@ -79,6 +79,10 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
   `eafc24.content.easports.com/.../crests/256x256/l{crestAssetId}.png` (el mismo que usa myproclubs; no está bloqueado desde Vercel).
   Datos comunes en `lib/match-data.ts`. Si cambias el diseño, sube `IMAGE_VERSION` (Discord cachea por URL).
   EA **no** da caras de los Pro, ni faltas ni amarillas del juego (solo `redcards`). `members/stats` sí da `proOverall`, `proHeight`.
+- `app/page.tsx` → página pública del club (para la gente del stream, móvil primero): nombre exacto con botón Copiar, Discord
+  (miembros/en línea vía API de invitaciones), ruta de 3 pasos, últimos partidos y plantilla agregada de `match_players`
+  (`lib/club-page.ts`, revalida cada 120 s). Enlace del stream: variable `STREAM_URL` (oculto si no está). Diseño en
+  `DESIGN.md` / `PRODUCT.md`; dirección "Bosque luminoso" (noche #03060c, luz cian #38e0e0 por proximidad, violeta solo MVP).
 - `public/fonts/` (Barlow Condensed, OFL, para la imagen), `public/escudo.jpg` (icono de los embeds vía `APP_URL`), `public/escudo-cuadrado.png` (avatar), `app/icon.png` (favicon).
 - `lib/ea.ts`, `lib/discord.ts`, `lib/convocatoria.ts`, `lib/commands.ts`, `lib/time.ts`.
 - `supabase/schema.sql`, `scripts/register-commands.ts`, `scripts/test-ea.ts`, `.github/workflows/cron.yml`.

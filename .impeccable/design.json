@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-23T00:00:00Z",
+  "title": "Design System: STARLINK FCX",
+  "extensions": {
+    "colorMeta": {
+      "night": { "role": "neutral", "displayName": "Noche", "canonical": "oklch(12.1% 0.017 256)", "tonalRamp": ["#080b0f", "#1f242c", "#3b4047", "#595e65", "#7c8187", "#a0a5ab", "#c7cbd0", "#eceff1"] },
+      "deep-navy": { "role": "neutral", "displayName": "Azul abismo", "canonical": "oklch(20.0% 0.067 265)", "tonalRamp": ["#040a1b", "#152243", "#313f5f", "#4f5d7c", "#73809d", "#98a5bf", "#c0cbe2", "#e9effb"] },
+      "club-fog": { "role": "neutral", "displayName": "Niebla del club", "canonical": "oklch(35.3% 0.120 263)", "tonalRamp": ["#010923", "#051d58", "#1c3b7d", "#3d5c99", "#6380b8", "#8aa5d7", "#b4cbf7", "#e3efff"] },
+      "lume-cyan": { "role": "primary", "displayName": "Cian bioluminiscente", "canonical": "oklch(82.6% 0.130 194)", "tonalRamp": ["#001010", "#002e2f", "#004d4e", "#006e6f", "#009494", "#14bcbc", "#43e4e4", "#b6fefd"] },
+      "mvp-violet": { "role": "secondary", "displayName": "Violeta MVP", "canonical": "oklch(72.5% 0.165 298)", "tonalRamp": ["#0e051e", "#2c134d", "#492d74", "#68499d", "#8c69cc", "#b28bfd", "#d7b4ff", "#f5e4ff"] },
+      "loss-coral": { "role": "tertiary", "displayName": "Coral derrota", "canonical": "oklch(76.1% 0.142 20)", "tonalRamp": ["#1a0304", "#450c11", "#6a2628", "#924042", "#bf5f60", "#ee7f7f", "#ffa6a5", "#ffdcda"] },
+      "ink": { "role": "neutral", "displayName": "Tinta", "canonical": "oklch(97.6% 0.011 269)", "tonalRamp": ["#0b0b0d", "#232427", "#3e4044", "#5c5d62", "#7e8085", "#a2a4ab", "#c8cad1", "#edeef3"] },
+      "ink-2": { "role": "neutral", "displayName": "Tinta plata", "canonical": "oklch(82.6% 0.051 265)", "tonalRamp": ["#080b12", "#1d2433", "#374052", "#535e74", "#74809a", "#96a5c3", "#bbcbec", "#e5efff"] },
+      "ink-3": { "role": "neutral", "displayName": "Tinta niebla", "canonical": "oklch(71.3% 0.061 262)", "tonalRamp": ["#070b13", "#1a2436", "#334057", "#4f5e7a", "#6f81a2", "#90a5cb", "#b8cbef", "#e4efff"] },
+      "line": { "role": "neutral", "displayName": "Hilo", "canonical": "rgba(142, 163, 201, 0.18)" },
+      "door-ink": { "role": "neutral", "displayName": "Tinta de puerta", "canonical": "#050b1c" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Solo el nombre del club en el primer pantallazo, sin partir." },
+      "headline": { "displayName": "Headline", "purpose": "Títulos de sección." },
+      "title": { "displayName": "Title", "purpose": "Títulos de paso y texto del botón del Discord." },
+      "score": { "displayName": "Score", "purpose": "Marcador de cada partido, cifras tabulares." },
+      "row": { "displayName": "Row", "purpose": "Rival, gamertag y cifras de la tabla." },
+      "body": { "displayName": "Body", "purpose": "Párrafos cortos, máximo 60-62ch." },
+      "meta": { "displayName": "Meta", "purpose": "Tipo de partido, fecha, presencia, pie." },
+      "label": { "displayName": "Label", "purpose": "Cabeceras de tabla, chips, acciones cortas en mayúsculas espaciadas." }
+    },
+    "shadows": [
+      { "name": "door", "value": "0 16px 30px -12px rgba(0, 0, 0, 0.8)", "purpose": "Solo bajo el botón del Discord." },
+      { "name": "door-pool", "value": "radial-gradient(ellipse 50% 50% at 50% 50%, rgba(56, 224, 224, 0.2), transparent 70%)", "purpose": "Charco de luz cian en el suelo bajo la puerta del Discord." },
+      { "name": "fog", "value": "radial-gradient(ellipse 80% 34% at 50% 14%, rgba(23, 54, 121, 0.5), transparent 70%)", "purpose": "Niebla del club detrás del escudo sobre el suelo nocturno." },
+      { "name": "proximity-halo", "value": "radial-gradient(260px 90px at var(--mx) 100%, rgba(56, 224, 224, calc(var(--near) * 0.16)), transparent 75%)", "purpose": "Halo de las filas que se encienden por proximidad." }
+    ],
+    "motion": [
+      { "name": "ease", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Curva única del sistema para todas las transiciones." },
+      { "name": "press", "value": "0.35s", "purpose": "Puerta del Discord: color y desplazamiento de 2px." },
+      { "name": "state", "value": "0.4s", "purpose": "Estados de la fila de copiar." },
+      { "name": "proximity", "value": "0.6s", "purpose": "Encendido de filas por proximidad (radio 140px; en táctil, al cruzar el 24% central de la pantalla)." },
+      { "name": "copy-reset", "value": "2200ms", "purpose": "Vuelta al reposo tras copiar." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "380px" },
+      { "name": "sm", "value": "560px" },
+      { "name": "lg", "value": "900px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Puerta del Discord",
+      "kind": "button",
+      "refersTo": "button-discord",
+      "description": "La única acción con relleno blanco; cierra el primer pantallazo.",
+      "html": "<a class=\"ds-discord\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"26\" height=\"26\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17 17 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.9l.4-.3a12.2 12.2 0 0 0 11.4 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.8a17 17 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3.1-11.7ZM8.5 14.7c-1 0-1.9-1-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm7 0c-1 0-1.9-1-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z\"/></svg>Entrar al Discord</a>",
+      "css": ".ds-discord { display: flex; align-items: center; justify-content: center; gap: 12px; height: 62px; max-width: 440px; border-radius: 16px; background: #f4f7ff; color: #050b1c; font: 700 26px/1 'Barlow Condensed', sans-serif; letter-spacing: 0.02em; text-decoration: none; box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.8); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1); } .ds-discord:hover { background: #fff; transform: translateY(-2px); } .ds-discord:active { transform: translateY(1px); } .ds-discord:focus-visible { outline: 2px solid #38e0e0; outline-offset: 3px; }"
+    },
+    {
+      "name": "Fila de copiar",
+      "kind": "custom",
+      "refersTo": "copy-row",
+      "description": "Copia el nombre exacto del club en un toque; contorno cian en reposo, relleno cian al confirmar.",
+      "html": "<button type=\"button\" class=\"ds-copy\"><span>Nombre exacto en EA FC 27</span><span class=\"ds-copy-action\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\"><rect x=\"8\" y=\"8\" width=\"12\" height=\"12\" rx=\"2.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M16 5.5V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>Copiar</span></button>",
+      "css": ".ds-copy { display: inline-flex; align-items: center; gap: 14px; min-height: 48px; padding: 6px 6px 6px 16px; border: 1px solid rgba(56, 224, 224, 0.45); border-radius: 999px; background: rgba(7, 19, 52, 0.7); color: #b6c6e8; font: 500 16px/1.2 'Barlow', sans-serif; cursor: pointer; transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s cubic-bezier(0.16, 1, 0.3, 1); } .ds-copy:hover { color: #f4f7ff; } .ds-copy:focus-visible { outline: 2px solid #38e0e0; outline-offset: 3px; } .ds-copy-action { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid #38e0e0; color: #38e0e0; font: 700 17px/1 'Barlow Condensed', sans-serif; letter-spacing: 0.04em; text-transform: uppercase; transition: background-color 0.4s, color 0.4s; } .ds-copy:active .ds-copy-action { background: #38e0e0; color: #03060c; }"
+    },
+    {
+      "name": "Chip de dato",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Dato fijo del club (juego, plataforma, crossplay); no interactivo.",
+      "html": "<ul class=\"ds-chips\"><li>EA FC 27 · Clubs</li><li>PS5</li><li>Crossplay</li></ul>",
+      "css": ".ds-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; } .ds-chips li { padding: 3px 12px; border: 1px solid rgba(142, 163, 201, 0.18); border-radius: 999px; color: #8ea3c9; font: 600 16px/1.4 'Barlow Condensed', sans-serif; letter-spacing: 0.04em; text-transform: uppercase; }"
+    },
+    {
+      "name": "Botón del stream",
+      "kind": "button",
+      "refersTo": "button-stream",
+      "description": "Secundario y condicional: solo existe si hay URL del stream.",
+      "html": "<a class=\"ds-stream\" href=\"#\">Ver el stream del club</a>",
+      "css": ".ds-stream { display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border: 1px solid #b48cff; border-radius: 14px; color: #f4f7ff; font: 700 20px/1 'Barlow Condensed', sans-serif; text-decoration: none; } .ds-stream:focus-visible { outline: 2px solid #38e0e0; outline-offset: 3px; }"
+    },
+    {
+      "name": "Ruta de pasos",
+      "kind": "custom",
+      "description": "Lista numerada vertical unida por un hilo cian; el número se enciende por proximidad.",
+      "html": "<ol class=\"ds-route\"><li class=\"ds-step\"><h3>Copia el nombre</h3><p>STARLINK FCX, tal cual: en mayúsculas y con espacio.</p></li><li class=\"ds-step\"><h3>Búscalo en el juego</h3><p>EA FC 27 → Clubs → Buscar club.</p></li><li class=\"ds-step\"><h3>Preséntate en el Discord</h3><p>Ahí se arman las convocatorias.</p></li></ol>",
+      "css": ".ds-route { position: relative; list-style: none; margin: 0; padding: 0; counter-reset: paso; background: #03060c; color: #f4f7ff; } .ds-route::before { content: ''; position: absolute; left: 17px; top: 33px; bottom: 40px; width: 1px; background: linear-gradient(#38e0e0, rgba(56, 224, 224, 0.15)); } .ds-step { position: relative; counter-increment: paso; padding: 16px 0 18px 52px; border-bottom: 1px solid rgba(142, 163, 201, 0.18); } .ds-step::before { content: counter(paso); position: absolute; left: 0; top: 16px; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(56, 224, 224, 0.3); background: #03060c; color: #f4f7ff; font: 700 18px/1 'Barlow Condensed', sans-serif; z-index: 1; transition: background-color 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s; } .ds-step:hover::before { background: #38e0e0; border-color: #38e0e0; color: #03060c; } .ds-step h3 { margin: 0; font: 700 26px/1.1 'Barlow Condensed', sans-serif; } .ds-step p { margin: 4px 0 0; color: #b6c6e8; font: 400 17px/1.5 'Barlow', sans-serif; }"
+    },
+    {
+      "name": "Fila de partido",
+      "kind": "custom",
+      "refersTo": "result-mark-win",
+      "description": "Marca de resultado, marcador tabular y rival con metadatos; se enciende por proximidad.",
+      "html": "<ol class=\"ds-matches\"><li class=\"ds-match\"><span class=\"ds-mark ds-w\">V</span><span class=\"ds-score\">3<span class=\"ds-dash\">–</span>1</span><span class=\"ds-who\"><span class=\"ds-opp\">vs Rival FC</span><span class=\"ds-meta\">Liga · 22 nov · 10:38 p. m.</span></span></li><li class=\"ds-match\"><span class=\"ds-mark ds-l\">D</span><span class=\"ds-score\">0<span class=\"ds-dash\">–</span>2</span><span class=\"ds-who\"><span class=\"ds-opp\">vs Otro Club</span><span class=\"ds-meta\">Amistoso · 21 nov · 9:10 p. m.</span></span></li></ol>",
+      "css": ".ds-matches { list-style: none; margin: 0; padding: 0; border-top: 1px solid rgba(142, 163, 201, 0.18); color: #f4f7ff; } .ds-match { display: grid; grid-template-columns: 36px auto 1fr; align-items: center; gap: 14px; padding: 14px 4px; border-bottom: 1px solid rgba(142, 163, 201, 0.18); transition: background 0.6s cubic-bezier(0.16, 1, 0.3, 1); } .ds-match:hover { background: radial-gradient(260px 90px at 50% 100%, rgba(56, 224, 224, 0.16), transparent 75%); } .ds-mark { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; font: 800 19px/1 'Barlow Condensed', sans-serif; background: rgba(142, 163, 201, 0.16); color: #b6c6e8; } .ds-mark.ds-w { background: #38e0e0; color: #03060c; } .ds-mark.ds-l { background: rgba(255, 138, 138, 0.16); color: #ff8a8a; } .ds-score { font: 800 32px/1 'Barlow Condensed', sans-serif; font-variant-numeric: tabular-nums; min-width: 64px; } .ds-dash { color: #8ea3c9; margin: 0 3px; } .ds-who { display: flex; flex-direction: column; min-width: 0; } .ds-opp { font: 700 21px/1.15 'Barlow Condensed', sans-serif; } .ds-meta { color: #8ea3c9; font: 400 14px/1.5 'Barlow', sans-serif; }"
+    },
+    {
+      "name": "Fila de plantilla con goleador",
+      "kind": "custom",
+      "refersTo": "badge-scorer",
+      "description": "Fila de tabla con posición, gamertag, insignia violeta de goleador y cifras tabulares.",
+      "html": "<table class=\"ds-squad\"><thead><tr><th class=\"ds-name\">Jugador</th><th>PJ</th><th>G</th><th>MVP</th></tr></thead><tbody><tr><th class=\"ds-name\"><span class=\"ds-player\"><span class=\"ds-pos\">DC</span><span class=\"ds-tag\">Gamertag</span><span class=\"ds-crown\">Goleador</span></span></th><td>8</td><td class=\"ds-top\">6</td><td><span class=\"ds-mvp\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M12 2.5l2.2 7.3H22l-6.2 4.6 2.4 7.3L12 17.2l-6.2 4.5 2.4-7.3L2 9.8h7.8z\"/></svg>2</span></td></tr></tbody></table>",
+      "css": ".ds-squad { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; color: #f4f7ff; } .ds-squad th, .ds-squad td { padding: 12px 6px; text-align: right; border-bottom: 1px solid rgba(142, 163, 201, 0.18); } .ds-squad thead th { color: #8ea3c9; font: 600 14px/1 'Barlow Condensed', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; } .ds-squad td { font: 600 19px/1 'Barlow Condensed', sans-serif; color: #b6c6e8; } .ds-squad .ds-name { text-align: left; font-weight: 400; } .ds-player { display: flex; align-items: center; gap: 10px; } .ds-pos { width: 36px; color: #8ea3c9; font: 700 14px/1 'Barlow Condensed', sans-serif; letter-spacing: 0.04em; } .ds-tag { font: 700 19px/1.1 'Barlow Condensed', sans-serif; color: #f4f7ff; } .ds-crown { padding: 2px 7px; border-radius: 6px; background: rgba(180, 140, 255, 0.16); color: #b48cff; font: 700 13px/1.2 'Barlow Condensed', sans-serif; letter-spacing: 0.05em; text-transform: uppercase; } .ds-squad td.ds-top { color: #b48cff; font-weight: 800; } .ds-mvp { display: inline-flex; align-items: center; gap: 3px; color: #b48cff; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El campo nocturno",
+    "overview": "Un estadio de noche visto desde arriba: suelo casi negro azulado, niebla del azul del club que se posa en zonas, y una luz bioluminiscente cian que solo aparece donde hay algo que hacer o algo que confirmar. Nada brilla por decorar. La luz marca la ruta (copiar el nombre, buscar el club, entrar al Discord), responde al visitante cuando se acerca y confirma lo que salió bien (copiado, victoria).\n\nLa densidad es de marcador, no de revista: filas largas separadas por hilos finos, números condensados y tabulares, poco texto corrido. La identidad es la del club (su escudo real fundido con la noche y sus azules), nunca la de EA ni la de una web genérica de estadísticas. Primero el móvil: todo se lee de arriba abajo en una columna y en escritorio se abre en dos (escudo a la izquierda, nombre y acciones a la derecha).\n\nSe rechaza la landing genérica de club: banner con menú, rejillas de tarjetas iguales, cifras de relleno.",
+    "keyCharacteristics": [
+      "Fondo nocturno con niebla azul por zonas, sin superficies elevadas.",
+      "Un solo acento de luz (cian) para rutas, foco, confirmación y victoria.",
+      "Violeta reservado para la distinción individual (MVP, goleador) y el enlace del stream.",
+      "El botón del Discord es el único relleno blanco de la página.",
+      "Filas en lugar de tarjetas; hilos de 1 px en lugar de cajas.",
+      "Barlow Condensed pesada para todo lo que se lee de un vistazo."
+    ],
+    "rules": [
+      { "name": "La Regla de la Luz Útil", "body": "El cian solo marca rutas, foco, confirmación o victoria. Si un elemento no es un paso, una acción o un resultado favorable, no se ilumina.", "section": "colors" },
+      { "name": "La Regla de la Única Puerta", "body": "El botón del Discord es el único relleno blanco pleno. Ninguna otra acción compite con él en luminosidad.", "section": "colors" },
+      { "name": "La Regla del Violeta Escaso", "body": "El violeta distingue a una persona (MVP, goleador) o lleva al stream. No se usa para secciones, fondos ni estados.", "section": "colors" },
+      { "name": "La Regla del Marcador", "body": "Toda cifra (goles, notas, miembros, balance) va en cifras tabulares. Los números se alinean como en un tablero.", "section": "typography" },
+      { "name": "La Regla de la Familia Única", "body": "Solo Barlow y Barlow Condensed. Las mayúsculas espaciadas se reservan para etiquetas de datos y acciones cortas, nunca para frases.", "section": "typography" },
+      { "name": "La Regla de Luz, no Sombra", "body": "Para destacar algo se enciende (halo o hilo cian), no se levanta. Ninguna superficie lleva sombra salvo la puerta.", "section": "elevation" },
+      { "name": "La Regla de la Proximidad", "body": "Las filas interactivas (pasos, partidos, jugadores) se encienden cuando el puntero se acerca (radio de 140px) o, en táctil, al cruzar el centro de la pantalla: un halo cian de hasta 16 % y un hilo inferior que sigue al puntero. Transición de 0.6s con la curva de salida suave del sistema; sin movimiento si el usuario pide reducirlo.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do reservar el cian (#38e0e0) para rutas, foco, confirmación y victoria (La Regla de la Luz Útil).",
+      "Do mantener el botón del Discord como único relleno blanco y como acción final del primer pantallazo.",
+      "Do separar el contenido en filas con hilos de 1px (rgba(142, 163, 201, 0.18)) en lugar de cajas.",
+      "Do usar Barlow Condensed con cifras tabulares para toda cifra y todo título.",
+      "Do dar profundidad con niebla del club (#173679 en gradientes radiales) y halos cian, no con sombras.",
+      "Do usar la curva cubic-bezier(0.16, 1, 0.3, 1) entre 0.35s y 0.6s para transiciones, y anularlas con reduced-motion.",
+      "Do usar iconos SVG en línea con `currentColor`."
+    ],
+    "donts": [
+      "Don't construir rejillas de tarjetas iguales, banners con menú ni secciones de relleno de landing genérica.",
+      "Don't usar el violeta (#b48cff) para fondos, secciones o estados; solo distinción individual y el stream.",
+      "Don't usar el coral fuera de derrotas y errores.",
+      "Don't añadir sombras a filas, chips o botones secundarios; la única sombra es la de la puerta.",
+      "Don't usar otra familia tipográfica que Barlow / Barlow Condensed.",
+      "Don't mostrar cifras, testimonios o logros que no salgan de partidos reales."
+    ]
+  }
+}

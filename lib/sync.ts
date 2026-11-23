@@ -2,16 +2,9 @@ import { env } from "./env";
 import { db } from "./supabase";
 import { getMatches, parseResult, type EaMatch, type EaMatchType } from "./ea";
 import { postMessage, mention, ts, NO_PINGS } from "./discord";
+import { buildMatchEmbed, type Abandono } from "./match-embed";
 
 const MATCH_TYPES: EaMatchType[] = ["leagueMatch", "friendlyMatch"];
-const RESULT_LABEL: Record<string, string> = {
-  victoria: "✅ Victoria",
-  derrota: "❌ Derrota",
-  empate: "➖ Empate",
-  victoria_dnf: "✅ Victoria (el rival abandonó)",
-  derrota_dnf: "🏳️ Derrota por abandono",
-};
-
 interface Summary {
   fetched: number;
   newMatches: number;
@@ -171,18 +164,12 @@ async function addCard(card: { discord_id: string; type: "amarilla" | "roja"; re
   return true;
 }
 
-/** Publica el resultado y saca rojas a los confirmados que se fueron a mitad de partido. */
+/** Saca rojas a los confirmados que se fueron a mitad de partido y publica el resumen. */
 async function processMatch(m: EaMatch, type: EaMatchType, clubId: string): Promise<number> {
   const x = summarizeMatch(m, type, clubId);
   const session = await sessionForMatch(x.playedAt);
-  const lines = [
-    `### ${type === "leagueMatch" ? "🏆 Liga" : "🤝 Amistoso"} · ${RESULT_LABEL[x.result] ?? x.result}`,
-    `**${x.goalsFor} - ${x.goalsAgainst}** vs ${x.opponent} · ${ts(x.playedAt, "t")}`,
-  ];
-  const mvp = x.players.find((p) => p.mom);
-  if (mvp) lines.push(`⭐ MVP: ${mvp.gamertag}`);
+  const abandonos: Abandono[] = [];
 
-  let reds = 0;
   if (session) {
     const linked = await linkedPlayers();
     const { data: rsvps } = await db().from("rsvps").select("discord_id").eq("session_id", session.id).eq("status", "voy");
@@ -201,16 +188,14 @@ async function processMatch(m: EaMatch, type: EaMatchType, clubId: string): Prom
           session_id: session.id,
           match_id: x.matchId,
         });
-        if (added) {
-          reds++;
-          lines.push(`🟥 ${mention(discordId)} se fue a mitad de partido (jugó ${pct}% del tiempo)`);
-        }
+        if (added) abandonos.push({ discordId, gamertag: p.gamertag, pct });
       }
     }
   }
 
-  await postMessage(env.discordChannelId, { content: lines.join("\n"), allowed_mentions: NO_PINGS });
-  return reds;
+  const embed = buildMatchEmbed(m, type, clubId, { crestUrl: env.crestUrl, abandonos });
+  await postMessage(env.discordChannelId, { embeds: [embed], allowed_mentions: NO_PINGS });
+  return abandonos.length;
 }
 
 /** Convocatorias cuya ventana terminó: confirmados que no jugaron ningún partido = amarilla. */

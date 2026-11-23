@@ -17,5 +17,8 @@ export const env = {
   get utcOffset() { return process.env.CLUB_UTC_OFFSET || "-04:00"; },
   get leaverThreshold() { return Number(process.env.LEAVER_THRESHOLD || 0.75); },
   get sessionWindowHours() { return Number(process.env.SESSION_WINDOW_HOURS || 4); },
+  /** URL pública de la web (para el escudo en los mensajes). */
+  get appUrl() { return (process.env.APP_URL || "https://clubs-bot.vercel.app").replace(/\/$/, ""); },
+  get crestUrl() { return `${this.appUrl}/escudo.jpg`; },
   get cronSecret() { return required("CRON_SECRET"); },
 };

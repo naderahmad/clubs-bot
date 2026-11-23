@@ -36,6 +36,7 @@ jobs:
       - name: Sync
         run: npm run sync -- ${{ inputs.dry && '--dry' || '' }}
         env:
+          APP_URL: https://clubs-bot.vercel.app
           EA_CLUB_ID: "621507"
           EA_PLATFORM: common-gen5
           CLUB_UTC_OFFSET: "-04:00"

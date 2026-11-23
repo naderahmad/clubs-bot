@@ -55,10 +55,11 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
 - Muchos partidos de liga tienen solo ~5 humanos (el resto IA).
 
 ## Estado actual
-- Código de fase 1 escrito; `tsc` y `next build` pasan. **Aún no probado contra Discord/Supabase reales.**
+- Fase 1 desplegada y conectada a Discord/Supabase reales. Falta probar los comandos a mano en Discord.
 - Desplegado: https://clubs-bot.vercel.app (repo privado `naderahmad/clubs-bot`, push a `main` despliega).
 - Supabase: proyecto `clubs-bot` (ref `wkkmhdcmlmliwrcurywj`, us-east-1), schema aplicado; claves en `.env`, Vercel y secrets de GitHub.
-- Workflow `sync-ea` desactivado hasta configurar Discord (faltan secrets `DISCORD_BOT_TOKEN` y `DISCORD_CHANNEL_ID`).
+- Discord: app "Starlink" en el servidor de pruebas, endpoint configurado, 4 comandos registrados.
+- Workflow `sync-ea` activo cada 15 min; primer sync real 2026-11-22 guardó 14 partidos.
 - Ideas para después: suspensión automática tras roja, check-in por canal de voz (requiere gateway),
   quitar tarjetas, MVP votado.
 

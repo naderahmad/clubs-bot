@@ -69,9 +69,12 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
 - `app/api/cron/sync/route.ts` → sync vía HTTP protegido con `CRON_SECRET` (solo diagnóstico: EA bloquea Vercel).
 - `lib/sync.ts` → guardar partidos, rojas, cerrar convocatorias, recordatorios.
 - `lib/match-embed.ts` → resumen de cada partido nuevo: embed corto (resultado, marcador, MVP, disciplina con menciones)
-  + imagen horizontal `app/api/match/[id]/image` (next/og, `lib/match-card.tsx`): cartas tipo FUT por jugador
-  (MVP dorada, 0' atenuada) y comparativa de equipos. Datos comunes en `lib/match-data.ts`. Si cambias el diseño,
-  sube `IMAGE_VERSION` (Discord cachea por URL). EA **no** trae faltas ni amarillas del juego: solo `redcards`.
+  + imagen horizontal `app/api/match/[id]/image` (next/og, `lib/match-card.tsx`). Cartas por jugador con avatar de Discord
+  si está vinculado (silueta si no), estado en la franja inferior: `91' JUGADOS`, `NO JUGÓ` (0 s), `JUGÓ X' DE Y'` (< umbral),
+  `ABANDONÓ EN EL X'` (solo si el bot le puso roja en ese partido) y `EXPULSADO` (roja del juego). Escudo del rival desde
+  `eafc24.content.easports.com/.../crests/256x256/l{crestAssetId}.png` (el mismo que usa myproclubs; no está bloqueado desde Vercel).
+  Datos comunes en `lib/match-data.ts`. Si cambias el diseño, sube `IMAGE_VERSION` (Discord cachea por URL).
+  EA **no** da caras de los Pro, ni faltas ni amarillas del juego (solo `redcards`). `members/stats` sí da `proOverall`, `proHeight`.
 - `public/fonts/` (Barlow Condensed, OFL, para la imagen), `public/escudo.jpg` (icono de los embeds vía `APP_URL`), `public/escudo-cuadrado.png` (avatar), `app/icon.png` (favicon).
 - `lib/ea.ts`, `lib/discord.ts`, `lib/convocatoria.ts`, `lib/commands.ts`, `lib/time.ts`.
 - `supabase/schema.sql`, `scripts/register-commands.ts`, `scripts/test-ea.ts`, `.github/workflows/cron.yml`.

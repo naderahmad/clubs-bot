@@ -1,0 +1,59 @@
+# Bot del club · Fase 1
+
+Bot de Discord (por HTTP, sin servidor 24/7) + worker que lee la API pública de EA Clubs.
+
+**Qué hace**
+- `/convocatoria` → mensaje con botones Voy / Tal vez / No voy (solo admins).
+- `/vincular gamertag` → une la cuenta de Discord con el gamertag de EA.
+- `/fiabilidad [jugador]` → % de convocatorias cumplidas + tarjetas.
+- `/tarjeta` → tarjeta manual del capitán (solo admins).
+- Cada 15 min: publica resultados nuevos, saca 🟥 a los confirmados que jugaron menos del 75% del partido,
+  cierra convocatorias (🟨 a quien confirmó y no jugó) y recuerda 1 h antes a quien no ha respondido.
+
+## Setup (≈30 min)
+
+### 1. Servidor de pruebas
+Crea un servidor de Discord nuevo. En Discord: Ajustes > Avanzado > **Modo desarrollador**.
+Clic derecho en el servidor → *Copiar ID* (`DISCORD_GUILD_ID`) y en el canal de pruebas → *Copiar ID* (`DISCORD_CHANNEL_ID`).
+
+### 2. Aplicación de Discord
+1. https://discord.com/developers/applications → **New Application**.
+2. *General Information*: copia **Application ID** y **Public Key**.
+3. *Bot* → **Reset Token** y copia el token (`DISCORD_BOT_TOKEN`).
+4. *OAuth2 > URL Generator*: scopes `bot` + `applications.commands`; permisos `Send Messages`, `Embed Links`,
+   `Read Message History`, `View Channels`. Abre la URL e invita el bot a tu servidor de pruebas.
+
+### 3. Supabase
+Crea un proyecto → *SQL Editor* → pega y ejecuta `supabase/schema.sql`.
+En *Project Settings > API* copia la **URL** y la **service_role key**.
+
+### 4. Local
+```bash
+cp .env.example .env      # rellena los valores
+npm install
+npm run test:ea           # comprueba que la API de EA responde y muestra los últimos partidos
+npm run register          # registra los slash commands en el servidor de pruebas
+```
+
+### 5. Desplegar en Vercel
+1. Sube el repo a GitHub e impórtalo en Vercel.
+2. Copia todas las variables de `.env` en *Settings > Environment Variables*.
+3. Ya desplegado, en el Developer Portal de Discord (*General Information*) pon
+   **Interactions Endpoint URL** = `https://TU-APP.vercel.app/api/discord/interactions` y guarda
+   (Discord hace un PING; si la Public Key está bien, lo acepta).
+4. **Prueba clave:** comprueba que EA no bloquea a Vercel:
+   ```bash
+   curl -H "Authorization: Bearer TU_CRON_SECRET" "https://TU-APP.vercel.app/api/cron/sync?dry=1"
+   ```
+   Si `fetched` es mayor que 0, funciona. Si sale todo en `errors` con 403/timeout, avisa: hay que mover el worker.
+
+### 6. Cron cada 15 min
+En GitHub > *Settings > Secrets and variables > Actions* crea `APP_URL` y `CRON_SECRET`.
+El workflow `.github/workflows/cron.yml` se activa solo (o lánzalo a mano en la pestaña *Actions*).
+
+## Notas
+- La API de EA no es oficial: puede cambiar o caerse sin aviso. El bot sigue funcionando con lo guardado.
+- `secondsPlayed` no distingue "se fue en el min 45" de "entró en el min 45": por eso solo se sanciona
+  a quien **confirmó** en la convocatoria. Ajusta el umbral con `LEAVER_THRESHOLD`.
+- Jugadores con 0 segundos en un partido no reciben roja (estaban en la sala pero no jugaron).
+- Sin `/vincular`, el bot no puede comprobar a un jugador y no lo sanciona.

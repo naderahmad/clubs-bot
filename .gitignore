@@ -6,3 +6,6 @@ node_modules
 next-env.d.ts
 supabase/.temp
 .vercel
+
+.vercel
+.env*

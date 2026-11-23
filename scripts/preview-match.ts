@@ -18,6 +18,7 @@ const { data, error } = await q.limit(1);
 if (error || !data?.length) throw error ?? new Error("Partido no encontrado");
 
 const row = data[0];
-const embed = buildMatchEmbed(row.raw as EaMatch, row.match_type as EaMatchType, env.eaClubId, { crestUrl: env.crestUrl });
+const embed = buildMatchEmbed(row.raw as EaMatch, row.match_type as EaMatchType, env.eaClubId, { appUrl: env.appUrl, crestUrl: env.crestUrl });
+await fetch(embed.image.url).catch(() => {});
 await postMessage(env.discordChannelId, { embeds: [embed], allowed_mentions: NO_PINGS });
 console.log(`✅ Publicado el resumen del partido ${row.match_id}`);

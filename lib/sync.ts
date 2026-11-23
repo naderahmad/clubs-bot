@@ -193,7 +193,9 @@ async function processMatch(m: EaMatch, type: EaMatchType, clubId: string): Prom
     }
   }
 
-  const embed = buildMatchEmbed(m, type, clubId, { crestUrl: env.crestUrl, abandonos });
+  const embed = buildMatchEmbed(m, type, clubId, { appUrl: env.appUrl, crestUrl: env.crestUrl, abandonos });
+  // Precalentar la imagen para que Discord la encuentre ya generada (si falla, el embed sale igual)
+  await fetch(embed.image.url, { signal: AbortSignal.timeout(20_000) }).catch(() => {});
   await postMessage(env.discordChannelId, { embeds: [embed], allowed_mentions: NO_PINGS });
   return abandonos.length;
 }

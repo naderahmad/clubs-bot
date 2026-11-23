@@ -5,6 +5,7 @@
 import { parseResult, type EaMatch, type EaMatchType } from "./ea";
 
 export interface MatchPlayer {
+  eaPlayerId: string;
   name: string;
   pos: string;
   posLabel: string;
@@ -44,6 +45,7 @@ export interface MatchView {
   goalsFor: number;
   goalsAgainst: number;
   players: MatchPlayer[]; // ordenados por posición y rating
+  maxSeconds: number; // duración real del partido (el que más jugó)
   ranked: MatchPlayer[]; // ordenados por rendimiento
   mvp: MatchPlayer | null;
   mvpIsOfficial: boolean;
@@ -65,6 +67,23 @@ export const TYPE_LABEL: Record<EaMatchType, string> = {
 };
 
 const n = (v: unknown) => Number(v ?? 0) || 0;
+
+/** Estado de un jugador en el partido (secondsPlayed no distingue "se fue" de "entró tarde"). */
+export type PlayerStatus =
+  | { kind: "completo" }
+  | { kind: "no_jugo" }
+  | { kind: "parcial"; minutes: number; of: number }
+  | { kind: "abandono"; minute: number }
+  | { kind: "expulsado"; minute: number };
+
+export function playerStatus(p: MatchPlayer, maxSeconds: number, threshold: number, abandono: boolean): PlayerStatus {
+  const of = Math.round(maxSeconds / 60);
+  if (p.redcards > 0) return { kind: "expulsado", minute: p.minutes };
+  if (p.seconds === 0) return { kind: "no_jugo" };
+  if (abandono) return { kind: "abandono", minute: p.minutes };
+  if (p.seconds < maxSeconds * threshold) return { kind: "parcial", minutes: p.minutes, of };
+  return { kind: "completo" };
+}
 
 export const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : null);
 
@@ -92,10 +111,11 @@ export function matchView(m: RawMatch, type: EaMatchType, clubId: string): Match
   const club = m.clubs[clubId];
   const oppId = Object.keys(m.clubs).find((k) => k !== clubId);
 
-  const players: MatchPlayer[] = Object.values(m.players?.[clubId] ?? {}).map((p) => {
+  const players: MatchPlayer[] = Object.entries(m.players?.[clubId] ?? {}).map(([eaPlayerId, p]) => {
     const pos = String(p.pos ?? "");
     const seconds = n(p.secondsPlayed);
     return {
+      eaPlayerId,
       name: String(p.playername ?? "?"),
       pos,
       posLabel: POS[pos]?.label ?? "---",
@@ -129,6 +149,7 @@ export function matchView(m: RawMatch, type: EaMatchType, clubId: string): Match
     goalsFor: n(club?.goals),
     goalsAgainst: n(club?.goalsAgainst),
     players,
+    maxSeconds: Math.max(0, ...players.map((p) => p.seconds)),
     ranked,
     mvp: official ?? ranked[0] ?? null,
     mvpIsOfficial: !!official,

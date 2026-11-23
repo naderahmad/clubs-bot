@@ -100,9 +100,9 @@ export function parseResult(matchType: EaMatchType, club: EaMatchClub): string {
   return gf > ga ? "victoria" : gf < ga ? "derrota" : "empate";
 }
 
-/** Estadísticas de la temporada actual del club (división, puntos, récord). */
-export function getSeasonalStats(clubId: string, platform = "common-gen5") {
-  return eaGet<Record<string, unknown>[]>("clubs/seasonalStats", { clubIds: clubId }, platform);
+/** Estadísticas globales del club: skillRating, bestDivision, récord (no trae la división actual). */
+export function getOverallStats(clubId: string, platform = "common-gen5") {
+  return eaGet<Array<Record<string, string>>>("clubs/overallStats", { clubIds: clubId }, platform);
 }
 
 export function getClubInfo(clubId: string, platform = "common-gen5") {

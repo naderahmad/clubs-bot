@@ -267,4 +267,4 @@ El renderizador de imágenes de partido para Discord (`lib/match-card.tsx`) comp
 - Se quitó la fila de copiar el nombre y los chips de plataforma (el club es multiplataforma): bajo el nombre va solo la línea "Club de EA FC 27" (label 20px, tinta plata). Las secciones de copiar y chips de arriba quedan obsoletas.
 - Bajo la puerta del Discord hay botones secundarios de contorno (hilo, 14px de radio, 50px de alto): Twitch con icono violeta y, cuando exista el enlace, WhatsApp con icono verde. Nunca en blanco: el blanco pleno sigue siendo solo del Discord.
 - La ruta pasa a: buscar en el juego, Discord, Twitch.
-- Bajo el nombre, la división actual: escudo oficial de EA (56px, sombra suave) + "División N" (Barlow Condensed 800, 28px) y debajo "Club de EA FC 27 · mejor: División M" en label. Sale de la tabla `club_status` que llena el sync.
+- Bajo el nombre, la división actual: escudo oficial de EA (56px, sombra suave) + "División N" (Barlow Condensed 800, 28px) y debajo "Club de EA FC 27 · Skill Rating N" en label. La división se fija a mano en `club_status`; el Skill Rating lo actualiza el sync.

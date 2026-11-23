@@ -107,7 +107,7 @@ export default async function Home() {
             <p>
               <span className="division-name">{divisionLabel(division.current)}</span>
               <span className="tagline">
-                Club de EA FC 27{division.best && division.best < division.current ? ` · mejor: ${divisionLabel(division.best)}` : ""}
+                Club de EA FC 27{division.skillRating ? ` · Skill Rating ${division.skillRating}` : ""}
               </span>
             </p>
           </div>

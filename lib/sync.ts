@@ -1,6 +1,6 @@
 import { env } from "./env";
 import { db } from "./supabase";
-import { getMatches, parseResult, searchClub, type EaMatch, type EaMatchType } from "./ea";
+import { getMatches, getOverallStats, parseResult, type EaMatch, type EaMatchType } from "./ea";
 import { postMessage, mention, ts, NO_PINGS } from "./discord";
 import { buildMatchEmbed, type Abandono } from "./match-embed";
 
@@ -302,15 +302,17 @@ async function sendReminders() {
   return sent;
 }
 
-/** Guarda la división actual y la mejor del club (allTimeLeaderboard/search es el único endpoint que la da). */
+/**
+ * Guarda Skill Rating y mejor división (clubs/overallStats). La división ACTUAL no la da la API de EA en FC 27
+ * (allTimeLeaderboard/search trae datos viejos), así que current_division se pone a mano en club_status.
+ */
 async function syncClubStatus(clubId: string) {
-  const found = await searchClub(env.eaClubName, env.eaPlatform);
-  const club = found.find((c) => String(c.clubId) === String(clubId));
-  if (!club?.currentDivision) return;
+  const [stats] = await getOverallStats(clubId, env.eaPlatform);
+  if (!stats) return;
   const { error } = await db().from("club_status").upsert({
     id: 1,
-    current_division: Number(club.currentDivision),
-    best_division: Number(club.bestDivision) || null,
+    skill_rating: Number(stats.skillRating) || null,
+    best_division: Number(stats.bestDivision) || null,
     updated_at: new Date().toISOString(),
   });
   if (error) throw error;

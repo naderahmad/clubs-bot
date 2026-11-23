@@ -33,9 +33,12 @@ mitad de partido o que confirman y no juegan.
 
 ## API de EA (no oficial)
 Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con FC 27 el 2026-11-22.
-- `allTimeLeaderboard/search?platform=&clubName=` → buscar club. Único endpoint con `currentDivision`/`bestDivision`
-  (numeración EA: 1 = Élite, 2 = División 1 … 6 = División 5; escudos `media.contentapi.ea.com/content/dam/eacom/fc/pro-clubs/divisioncrest{n}.png`,
-  copiados en `public/divisiones/`). `clubs/seasonalStats` da 404 en FC 27. El sync guarda la división en la tabla `club_status`.
+- `allTimeLeaderboard/search?platform=&clubName=` → buscar club. Su `currentDivision` está **desactualizado** (2026-11-23 decía 6 =
+  División 5 con 120 partidos; en el juego el club está en División 1 con 301). **La API no da la división actual en FC 27**
+  (`clubs/seasonalStats` da 404; myproclubs muestra en realidad `bestDivision`). Por eso `club_status.current_division` se pone
+  **a mano** (numeración EA: 1 = Élite, 2 = División 1 … 6 = División 5; escudos `divisioncrest{n}.png` en `public/divisiones/`).
+  Cambiarla: `npx supabase db query --remote=wkkmhdcmlmliwrcurywj "update club_status set current_division = N where id = 1"`.
+  El sync solo actualiza `skill_rating` y `best_division` desde `clubs/overallStats`.
 - `clubs/info?clubIds=`, `clubs/overallStats?clubIds=`.
 - `members/stats?clubId=` (temporada) y `members/career/stats?clubId=` → solo trae `name`, no playerId.
 - `clubs/matches?clubIds=&matchType=leagueMatch|friendlyMatch|playoffMatch&maxResultCount=10`

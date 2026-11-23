@@ -83,8 +83,10 @@ alter table cards         enable row level security;
 -- Estado del club en EA (una sola fila, la actualiza el sync)
 create table if not exists club_status (
   id                int primary key default 1 check (id = 1),
-  current_division  int,               -- numeración de EA: 1 = Élite, 2 = División 1 … 6 = División 5
+  current_division  int,               -- numeración de EA: 1 = Élite, 2 = División 1 … 6 = División 5. MANUAL:
+                                       -- la API de EA no da la división actual en FC 27 (search trae datos viejos)
   best_division     int,
+  skill_rating      int,               -- clubs/overallStats, lo actualiza el sync
   updated_at        timestamptz not null default now()
 );
 alter table club_status enable row level security;

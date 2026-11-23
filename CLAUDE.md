@@ -61,7 +61,7 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
 - Desplegado: https://clubs-bot.vercel.app (repo privado `naderahmad/clubs-bot`, push a `main` despliega).
 - Supabase: proyecto `clubs-bot` (ref `wkkmhdcmlmliwrcurywj`, us-east-1), schema aplicado; claves en `.env`, Vercel y secrets de GitHub.
 - Discord: app "Starlink" en el servidor de pruebas, endpoint configurado, 4 comandos registrados.
-- Workflow `sync-ea` activo cada 15 min; primer sync real 2026-11-22 guardó 14 partidos.
+- Sync activo: cron-job.org cada 2 min verificado el 2026-11-23 (cada pasada ~48 s). Bot aún solo en el servidor de pruebas.
 - Ideas para después: suspensión automática tras roja, check-in por canal de voz (requiere gateway),
   quitar tarjetas, MVP votado.
 

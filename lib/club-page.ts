@@ -34,6 +34,7 @@ export interface ClubPageData {
   record: { played: number; w: number; d: number; l: number; gf: number; ga: number; since: string | null };
   squad: SquadRow[];
   discord: { members: number; online: number } | null;
+  division: { current: number; best: number | null } | null;
   failed: boolean;
 }
 
@@ -60,17 +61,20 @@ export async function getClubPageData(): Promise<ClubPageData> {
     record: { played: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, since: null },
     squad: [],
     discord,
+    division: null,
     failed: false,
   };
 
   try {
-    const [{ data: matches, error: e1 }, { data: apps, error: e2 }] = await Promise.all([
+    const [{ data: matches, error: e1 }, { data: apps, error: e2 }, { data: status }] = await Promise.all([
       db()
         .from("matches")
         .select("match_id, played_at, match_type, goals_for, goals_against, result, opponent")
         .order("played_at", { ascending: false }),
       db().from("match_players").select("ea_player_id, gamertag, pos, seconds_played, rating, goals, assists, mom"),
+      db().from("club_status").select("current_division, best_division").eq("id", 1).maybeSingle(),
     ]);
+    const division = status?.current_division ? { current: status.current_division, best: status.best_division ?? null } : null;
     if (e1 || e2) throw e1 ?? e2;
 
     const all = matches ?? [];
@@ -117,9 +121,12 @@ export async function getClubPageData(): Promise<ClubPageData> {
       })
       .sort((x, y) => y.goals - x.goals || y.assists - x.assists || y.rating - x.rating);
 
-    return { recent, record, squad, discord, failed: false };
+    return { recent, record, squad, discord, division, failed: false };
   } catch (err) {
     console.error("club page:", err);
     return { ...empty, failed: true };
   }
 }
+
+/** EA numera 1 = Élite, 2 = División 1 … 6 = División 5 (verificado con sus escudos divisioncrest{n}.png). */
+export const divisionLabel = (n: number) => (n <= 1 ? "Élite" : `División ${n - 1}`);

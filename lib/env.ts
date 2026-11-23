@@ -13,6 +13,7 @@ export const env = {
   get supabaseUrl() { return required("SUPABASE_URL"); },
   get supabaseKey() { return required("SUPABASE_SERVICE_ROLE_KEY"); },
   get eaClubId() { return required("EA_CLUB_ID"); },
+  get eaClubName() { return process.env.EA_CLUB_NAME || "STARLINK FCX"; },
   get eaPlatform() { return process.env.EA_PLATFORM || "common-gen5"; },
   get utcOffset() { return process.env.CLUB_UTC_OFFSET || "-04:00"; },
   get leaverThreshold() { return Number(process.env.LEAVER_THRESHOLD || 0.75); },

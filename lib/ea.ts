@@ -49,6 +49,7 @@ export interface EaClubSearchResult {
   clubName: string;
   gamesPlayed?: string;
   currentDivision?: string;
+  bestDivision?: string;
 }
 
 async function eaGet<T>(path: string, params: Record<string, string>, platform: string): Promise<T> {
@@ -97,4 +98,13 @@ export function parseResult(matchType: EaMatchType, club: EaMatchClub): string {
   }
   // Amistosos: EA manda result "0"; se deduce por goles.
   return gf > ga ? "victoria" : gf < ga ? "derrota" : "empate";
+}
+
+/** Estadísticas de la temporada actual del club (división, puntos, récord). */
+export function getSeasonalStats(clubId: string, platform = "common-gen5") {
+  return eaGet<Record<string, unknown>[]>("clubs/seasonalStats", { clubIds: clubId }, platform);
+}
+
+export function getClubInfo(clubId: string, platform = "common-gen5") {
+  return eaGet<Record<string, Record<string, unknown>>>("clubs/info", { clubIds: clubId }, platform);
 }

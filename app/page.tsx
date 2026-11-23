@@ -1,4 +1,4 @@
-import { getClubPageData, DISCORD_INVITE, type RecentMatch } from "@/lib/club-page";
+import { getClubPageData, divisionLabel, DISCORD_INVITE, type RecentMatch } from "@/lib/club-page";
 import { TYPE_LABEL } from "@/lib/match-data";
 import type { EaMatchType } from "@/lib/ea";
 import { Proximity } from "./proximity";
@@ -91,7 +91,7 @@ function MatchRow({ m }: { m: RecentMatch }) {
 }
 
 export default async function Home() {
-  const { recent, record, squad, discord, failed } = await getClubPageData();
+  const { recent, record, squad, discord, division, failed } = await getClubPageData();
   const topScorer = squad[0]?.goals ? squad[0].id : null;
 
   return (
@@ -101,7 +101,19 @@ export default async function Home() {
       <section className="hero" aria-labelledby="club">
         <img className="crest" src="/escudo.jpg" alt="Escudo de STARLINK FCX" width={600} height={800} />
         <h1 id="club">{CLUB}</h1>
-        <p className="tagline">Club de EA FC 27</p>
+        {division && division.current >= 1 && division.current <= 6 ? (
+          <div className="division">
+            <img src={`/divisiones/${division.current}.webp`} alt="" width={56} height={56} />
+            <p>
+              <span className="division-name">{divisionLabel(division.current)}</span>
+              <span className="tagline">
+                Club de EA FC 27{division.best && division.best < division.current ? ` · mejor: ${divisionLabel(division.best)}` : ""}
+              </span>
+            </p>
+          </div>
+        ) : (
+          <p className="tagline">Club de EA FC 27</p>
+        )}
         <div className="door">
           <a className="discord" href={DISCORD_INVITE} target="_blank" rel="noopener noreferrer">
             <DiscordMark />

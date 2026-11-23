@@ -1,6 +1,6 @@
 import { env } from "./env";
 import { db } from "./supabase";
-import { getMatches, parseResult, type EaMatch, type EaMatchType } from "./ea";
+import { getMatches, parseResult, searchClub, type EaMatch, type EaMatchType } from "./ea";
 import { postMessage, mention, ts, NO_PINGS } from "./discord";
 import { buildMatchEmbed, type Abandono } from "./match-embed";
 
@@ -48,6 +48,13 @@ export async function runSync({ dry = false } = {}) {
     } catch (e) {
       s.errors.push(`match ${m.matchId}: ${String(e)}`);
     }
+  }
+
+  // 2b. División actual del club (para la web)
+  try {
+    await syncClubStatus(clubId);
+  } catch (e) {
+    s.errors.push(`division: ${String(e)}`);
   }
 
   // 3. Cerrar convocatorias ya terminadas (ausencias = amarillas)
@@ -293,4 +300,18 @@ async function sendReminders() {
     sent++;
   }
   return sent;
+}
+
+/** Guarda la división actual y la mejor del club (allTimeLeaderboard/search es el único endpoint que la da). */
+async function syncClubStatus(clubId: string) {
+  const found = await searchClub(env.eaClubName, env.eaPlatform);
+  const club = found.find((c) => String(c.clubId) === String(clubId));
+  if (!club?.currentDivision) return;
+  const { error } = await db().from("club_status").upsert({
+    id: 1,
+    current_division: Number(club.currentDivision),
+    best_division: Number(club.bestDivision) || null,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw error;
 }

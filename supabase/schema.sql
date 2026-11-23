@@ -79,3 +79,12 @@ alter table rsvps         enable row level security;
 alter table matches       enable row level security;
 alter table match_players enable row level security;
 alter table cards         enable row level security;
+
+-- Estado del club en EA (una sola fila, la actualiza el sync)
+create table if not exists club_status (
+  id                int primary key default 1 check (id = 1),
+  current_division  int,               -- numeración de EA: 1 = Élite, 2 = División 1 … 6 = División 5
+  best_division     int,
+  updated_at        timestamptz not null default now()
+);
+alter table club_status enable row level security;

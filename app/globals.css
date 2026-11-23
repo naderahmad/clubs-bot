@@ -71,6 +71,11 @@ main { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
   white-space: nowrap;
 }
 
+.division { margin-top: 14px; display: flex; align-items: center; gap: 12px; text-align: left; }
+.division img { width: 56px; height: 56px; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6)); }
+.division p { display: flex; flex-direction: column; gap: 2px; }
+.division-name { font: 800 28px/1 var(--f-display), sans-serif; color: var(--ink); }
+.division .tagline { margin-top: 0; font-size: 16px; }
 .tagline {
   margin-top: 10px;
   color: var(--ink-2);
@@ -300,7 +305,8 @@ footer a { font: 700 18px/1 var(--f-display), sans-serif; }
   }
   .crest { grid-column: 1; grid-row: 1 / -1; align-self: center; justify-self: center; width: min(100%, 420px); }
   .hero h1 { grid-column: 2; grid-row: 2; font-size: clamp(5rem, 8.6vw, 6rem); }
-  .tagline { grid-column: 2; grid-row: 3; }
+  .tagline, .division { grid-column: 2; grid-row: 3; }
+  .division .tagline { grid-column: auto; grid-row: auto; }
   .door { grid-column: 2; grid-row: 4; margin-top: 0; padding-top: 32px; }
   .presence { justify-content: flex-start; }
   section:not(.hero) { padding-top: 96px; }

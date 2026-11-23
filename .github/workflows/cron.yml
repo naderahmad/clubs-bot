@@ -1,8 +1,12 @@
-# Sincroniza EA → Supabase → Discord cada 15 minutos ejecutando el sync directamente en el runner.
+# Sincroniza EA → Supabase → Discord ejecutando el sync directamente en el runner.
 # No pasa por Vercel: Akamai bloquea las IP de Vercel (403), y desde GitHub Actions EA sí responde.
-# (Además, el cron de Vercel en plan gratuito solo corre una vez al día.)
 #
-# Configura en GitHub > Settings > Secrets and variables > Actions > Secrets:
+# Disparo principal: cron-job.org llama cada 2 min a https://clubs-bot.vercel.app/api/cron/trigger,
+# que lanza este workflow con workflow_dispatch (arranca al momento). El "schedule" de abajo es solo
+# un respaldo: el cron de GitHub se retrasa o se salta ejecuciones.
+# Solo publica partidos nuevos; si no hay nada nuevo, no manda nada.
+#
+# Secrets en GitHub > Settings > Secrets and variables > Actions:
 #   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DISCORD_BOT_TOKEN, DISCORD_CHANNEL_ID
 # Para probar solo EA: pestaña Actions > sync-ea > Run workflow > marcar "dry".
 name: sync-ea
@@ -17,7 +21,7 @@ on:
         type: boolean
         default: false
 
-# Nunca dos sync a la vez (evita tarjetas o mensajes duplicados).
+# Nunca dos sync a la vez (evita tarjetas o mensajes duplicados); como mucho uno en cola.
 concurrency:
   group: sync-ea
   cancel-in-progress: false

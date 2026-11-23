@@ -17,7 +17,9 @@ mitad de partido o que confirman y no juegan.
   web app para consulta y gestión (perfiles, rankings, historial, panel del capitán, página pública, overlay).
 - **Un solo backend**: Supabase es la fuente de verdad. Bot y web solo leen/escriben ahí.
 - **Bot por HTTP** (Discord Interactions Endpoint) dentro de Next.js en Vercel, sin gateway 24/7.
-- **Worker** en `/api/cron/sync` llamado cada 15 min por GitHub Actions (el cron de Vercel gratis es 1/día).
+- **Worker** en GitHub Actions (`.github/workflows/cron.yml`, cada 15 min) ejecutando `scripts/sync.ts` directamente.
+  Verificado 2026-11-22: EA/Akamai devuelve **403 desde Vercel**, pero responde desde PC local y desde runners de GitHub.
+  `/api/cron/sync` sigue en Vercel solo como diagnóstico (no se usa en producción).
 - Login de la web (fase 2): Discord OAuth vía Supabase Auth.
 - Se prueba primero en un **servidor de Discord de pruebas**, no en el principal.
 
@@ -54,17 +56,18 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
 
 ## Estado actual
 - Código de fase 1 escrito; `tsc` y `next build` pasan. **Aún no probado contra Discord/Supabase reales.**
-- Pendiente crítico: verificar que EA no bloquea las peticiones desde Vercel → `GET /api/cron/sync?dry=1`.
-  Si bloquea, mover el worker (p. ej. a GitHub Actions ejecutando el sync directamente).
+- Desplegado: https://clubs-bot.vercel.app (repo privado `naderahmad/clubs-bot`, push a `main` despliega).
+- Workflow `sync-ea` desactivado hasta tener Supabase y Discord configurados (secrets en GitHub).
 - Ideas para después: suspensión automática tras roja, check-in por canal de voz (requiere gateway),
   quitar tarjetas, MVP votado.
 
 ## Estructura
 - `app/api/discord/interactions/route.ts` → comandos y botones (verifica firma Ed25519).
-- `app/api/cron/sync/route.ts` → sync protegido con `CRON_SECRET`.
+- `scripts/sync.ts` → sync que corre en GitHub Actions (`--dry` = solo EA).
+- `app/api/cron/sync/route.ts` → sync vía HTTP protegido con `CRON_SECRET` (solo diagnóstico: EA bloquea Vercel).
 - `lib/sync.ts` → guardar partidos, rojas, cerrar convocatorias, recordatorios.
 - `lib/ea.ts`, `lib/discord.ts`, `lib/convocatoria.ts`, `lib/commands.ts`, `lib/time.ts`.
 - `supabase/schema.sql`, `scripts/register-commands.ts`, `scripts/test-ea.ts`, `.github/workflows/cron.yml`.
 
 ## Comandos
-`npm run dev` · `npm run build` · `npm run typecheck` · `npm run test:ea` · `npm run register`
+`npm run dev` · `npm run build` · `npm run typecheck` · `npm run test:ea` · `npm run sync` (`-- --dry`) · `npm run register`

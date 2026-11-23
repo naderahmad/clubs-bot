@@ -1,22 +1,47 @@
-# Llama al endpoint de sincronización cada 15 minutos.
-# (El cron de Vercel en plan gratuito solo corre una vez al día, por eso usamos GitHub Actions.)
-# Configura en GitHub > Settings > Secrets and variables > Actions:
-#   APP_URL      → https://tu-app.vercel.app
-#   CRON_SECRET  → el mismo valor que en Vercel
+# Sincroniza EA → Supabase → Discord cada 15 minutos ejecutando el sync directamente en el runner.
+# No pasa por Vercel: Akamai bloquea las IP de Vercel (403), y desde GitHub Actions EA sí responde.
+# (Además, el cron de Vercel en plan gratuito solo corre una vez al día.)
+#
+# Configura en GitHub > Settings > Secrets and variables > Actions > Secrets:
+#   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DISCORD_BOT_TOKEN, DISCORD_CHANNEL_ID
+# Para probar solo EA: pestaña Actions > sync-ea > Run workflow > marcar "dry".
 name: sync-ea
 
 on:
   schedule:
     - cron: "*/15 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      dry:
+        description: "Solo comprobar que EA responde (no toca Supabase ni Discord)"
+        type: boolean
+        default: false
+
+# Nunca dos sync a la vez (evita tarjetas o mensajes duplicados).
+concurrency:
+  group: sync-ea
+  cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
-      - name: Llamar a /api/cron/sync
-        run: |
-          curl -fsS --max-time 90 \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ secrets.APP_URL }}/api/cron/sync"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Sync
+        run: npm run sync -- ${{ inputs.dry && '--dry' || '' }}
+        env:
+          EA_CLUB_ID: "621507"
+          EA_PLATFORM: common-gen5
+          CLUB_UTC_OFFSET: "-04:00"
+          LEAVER_THRESHOLD: "0.75"
+          SESSION_WINDOW_HOURS: "4"
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}

@@ -41,15 +41,16 @@ npm run register          # registra los slash commands en el servidor de prueba
 3. Ya desplegado, en el Developer Portal de Discord (*General Information*) pon
    **Interactions Endpoint URL** = `https://TU-APP.vercel.app/api/discord/interactions` y guarda
    (Discord hace un PING; si la Public Key está bien, lo acepta).
-4. **Prueba clave:** comprueba que EA no bloquea a Vercel:
-   ```bash
-   curl -H "Authorization: Bearer TU_CRON_SECRET" "https://TU-APP.vercel.app/api/cron/sync?dry=1"
-   ```
-   Si `fetched` es mayor que 0, funciona. Si sale todo en `errors` con 403/timeout, avisa: hay que mover el worker.
 
-### 6. Cron cada 15 min
-En GitHub > *Settings > Secrets and variables > Actions* crea `APP_URL` y `CRON_SECRET`.
-El workflow `.github/workflows/cron.yml` se activa solo (o lánzalo a mano en la pestaña *Actions*).
+### 6. Cron cada 15 min (GitHub Actions)
+EA (Akamai) bloquea las IP de Vercel con 403, así que el sync **no** corre en Vercel: lo ejecuta
+directamente `.github/workflows/cron.yml` en los runners de GitHub, donde EA sí responde.
+1. En GitHub > *Settings > Secrets and variables > Actions* crea los secrets
+   `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DISCORD_BOT_TOKEN` y `DISCORD_CHANNEL_ID`.
+2. Pestaña *Actions* > **sync-ea** > *Run workflow* con **dry** marcado: debe salir `"fetched"` > 0.
+3. Activa el workflow (*Enable workflow*) para que corra solo cada 15 min.
+
+En local: `npm run sync -- --dry` (solo EA) o `npm run sync` (todo, con tu `.env`).
 
 ## Notas
 - La API de EA no es oficial: puede cambiar o caerse sin aviso. El bot sigue funcionando con lo guardado.

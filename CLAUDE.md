@@ -58,7 +58,7 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
 
 ## Estado actual
 - Fase 1 desplegada y conectada a Discord/Supabase reales. Falta probar los comandos a mano en Discord.
-- Desplegado: https://clubs-bot.vercel.app (repo privado `naderahmad/clubs-bot`, push a `main` despliega).
+- Desplegado: https://clubs-bot.vercel.app (dirección pública para la gente: https://starlinkfcx.vercel.app, mismo proyecto; el bot, cron-job.org y `APP_URL` siguen usando clubs-bot) (repo privado `naderahmad/clubs-bot`, push a `main` despliega).
 - Supabase: proyecto `clubs-bot` (ref `wkkmhdcmlmliwrcurywj`, us-east-1), schema aplicado; claves en `.env`, Vercel y secrets de GitHub.
 - Discord: app "Starlink". **En producción en el servidor oficial** (STARLINK FCX / TITANS CR1OLLO, guild `1443767065478561999`),
   resúmenes en `#📪│historial` (`1554268568147730595`, solo lectura salvo el bot). Comandos registrados en el oficial y en el de pruebas

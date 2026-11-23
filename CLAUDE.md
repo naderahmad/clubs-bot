@@ -23,7 +23,7 @@ mitad de partido o que confirman y no juegan.
   Verificado 2026-11-22: EA/Akamai devuelve **403 desde Vercel**, pero responde desde PC local y desde runners de GitHub.
   `/api/cron/sync` sigue en Vercel solo como diagnóstico (no se usa en producción).
 - Login de la web (fase 2): Discord OAuth vía Supabase Auth.
-- Se prueba primero en un **servidor de Discord de pruebas**, no en el principal.
+- Se probó primero en un **servidor de Discord de pruebas**; desde el 2026-11-23 publica en el oficial.
 
 ## Fases
 1. **(actual)** Bot + DB: `/convocatoria`, `/vincular`, `/fiabilidad`, `/tarjeta`, resultados automáticos,
@@ -60,8 +60,10 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
 - Fase 1 desplegada y conectada a Discord/Supabase reales. Falta probar los comandos a mano en Discord.
 - Desplegado: https://clubs-bot.vercel.app (repo privado `naderahmad/clubs-bot`, push a `main` despliega).
 - Supabase: proyecto `clubs-bot` (ref `wkkmhdcmlmliwrcurywj`, us-east-1), schema aplicado; claves en `.env`, Vercel y secrets de GitHub.
-- Discord: app "Starlink" en el servidor de pruebas, endpoint configurado, 4 comandos registrados.
-- Sync activo: cron-job.org cada 2 min verificado el 2026-11-23 (cada pasada ~48 s). Bot aún solo en el servidor de pruebas.
+- Discord: app "Starlink". **En producción en el servidor oficial** (STARLINK FCX / TITANS CR1OLLO, guild `1443767065478561999`),
+  resúmenes en `#📪│historial` (`1554268568147730595`, solo lectura salvo el bot). Comandos registrados en el oficial y en el de pruebas
+  (`1574214709190856835`, canal `1574214709882654792`). Para registrar en otro servidor: `DISCORD_GUILD_ID=<id> npm run register`.
+- Sync activo: cron-job.org cada 2 min verificado el 2026-11-23 (cada pasada ~48 s).
 - Ideas para después: suspensión automática tras roja, check-in por canal de voz (requiere gateway),
   quitar tarjetas, MVP votado.
 

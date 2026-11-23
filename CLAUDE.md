@@ -57,7 +57,8 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
 ## Estado actual
 - Código de fase 1 escrito; `tsc` y `next build` pasan. **Aún no probado contra Discord/Supabase reales.**
 - Desplegado: https://clubs-bot.vercel.app (repo privado `naderahmad/clubs-bot`, push a `main` despliega).
-- Workflow `sync-ea` desactivado hasta tener Supabase y Discord configurados (secrets en GitHub).
+- Supabase: proyecto `clubs-bot` (ref `wkkmhdcmlmliwrcurywj`, us-east-1), schema aplicado; claves en `.env`, Vercel y secrets de GitHub.
+- Workflow `sync-ea` desactivado hasta configurar Discord (faltan secrets `DISCORD_BOT_TOKEN` y `DISCORD_CHANNEL_ID`).
 - Ideas para después: suspensión automática tras roja, check-in por canal de voz (requiere gateway),
   quitar tarjetas, MVP votado.
 

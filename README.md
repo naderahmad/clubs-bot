@@ -51,7 +51,8 @@ directamente `.github/workflows/cron.yml` en los runners de GitHub, donde EA sí
 3. **Disparo cada 2 min** (el cron de GitHub no es fiable):
    - En Vercel añade `GITHUB_TOKEN` (token *fine-grained* solo de este repo, permiso **Actions: Read and write**).
    - En [cron-job.org](https://cron-job.org) crea un job: URL `https://TU-APP.vercel.app/api/cron/trigger`,
-     cada 2 minutos, cabecera `Authorization: Bearer TU_CRON_SECRET`.
+     cada 2 minutos. Autenticación: `?key=TU_TRIGGER_KEY` en la URL (clave de solo-disparo) o la cabecera
+     `Authorization: Bearer TU_CRON_SECRET`.
    - El repo debe ser **público** para que los minutos de Actions sean gratis e ilimitados.
 
 En local: `npm run sync -- --dry` (solo EA) o `npm run sync` (todo, con tu `.env`).

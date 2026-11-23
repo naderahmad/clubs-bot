@@ -18,7 +18,7 @@ mitad de partido o que confirman y no juegan.
 - **Un solo backend**: Supabase es la fuente de verdad. Bot y web solo leen/escriben ahí.
 - **Bot por HTTP** (Discord Interactions Endpoint) dentro de Next.js en Vercel, sin gateway 24/7.
 - **Worker** en GitHub Actions (`.github/workflows/cron.yml`) ejecutando `scripts/sync.ts` directamente. Disparo: cron-job.org
-  cada 2 min → `/api/cron/trigger` (Vercel, `CRON_SECRET`) → `workflow_dispatch` con `GITHUB_TOKEN`. El `schedule` de GitHub
+  cada 2 min → `/api/cron/trigger?key=TRIGGER_KEY` (Vercel; también acepta `Bearer CRON_SECRET`) → `workflow_dispatch` con `GITHUB_TOKEN`. El `schedule` de GitHub
   es solo respaldo: el 2026-11-22 estuvo 45 min activo sin ejecutar nada. Repo **público** para minutos ilimitados.
   Verificado 2026-11-22: EA/Akamai devuelve **403 desde Vercel**, pero responde desde PC local y desde runners de GitHub.
   `/api/cron/sync` sigue en Vercel solo como diagnóstico (no se usa en producción).

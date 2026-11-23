@@ -8,11 +8,14 @@ export const dynamic = "force-dynamic";
  * (EA bloquea a Vercel, así que el sync no puede correr aquí). Los workflow_dispatch
  * arrancan al momento, a diferencia del cron programado de GitHub.
  * GET/POST /api/cron/trigger  con  Authorization: Bearer <CRON_SECRET>
+ *       o   /api/cron/trigger?key=<TRIGGER_KEY>   (clave de solo-disparo, cómoda para pegar en cron-job.org;
+ *                                                 si se filtra, lo único que permite es lanzar un sync)
  */
 async function trigger(req: Request) {
-  if (req.headers.get("authorization") !== `Bearer ${env.cronSecret}`) {
-    return new Response("No autorizado", { status: 401 });
-  }
+  const triggerKey = process.env.TRIGGER_KEY;
+  const byHeader = req.headers.get("authorization") === `Bearer ${env.cronSecret}`;
+  const byKey = !!triggerKey && new URL(req.url).searchParams.get("key") === triggerKey;
+  if (!byHeader && !byKey) return new Response("No autorizado", { status: 401 });
   const repo = process.env.GITHUB_REPO || "naderahmad/clubs-bot";
   const token = process.env.GITHUB_TOKEN;
   if (!token) return new Response("Falta GITHUB_TOKEN", { status: 500 });

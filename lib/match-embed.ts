@@ -13,7 +13,7 @@ export interface Abandono {
 }
 
 /** Súbelo si cambia el diseño de la imagen (Discord y la CDN la cachean por URL). */
-const IMAGE_VERSION = 2;
+const IMAGE_VERSION = 3;
 
 const COLOR: Record<string, number> = {
   victoria: 0x2ecc71,

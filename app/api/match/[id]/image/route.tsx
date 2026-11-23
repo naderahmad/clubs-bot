@@ -6,6 +6,8 @@ import { MatchCard, CARD_WIDTH, cardLayout, type CardExtras } from "@/lib/match-
 import type { EaMatch, EaMatchType } from "@/lib/ea";
 
 export const runtime = "nodejs";
+/** Margen para el primer render en frío (Discord y el sync esperan la imagen). */
+export const maxDuration = 30;
 
 /** Escudos de club que EA usa en la web (los mismos que myproclubs). */
 const EA_CREST = (assetId: string) =>
@@ -39,13 +41,34 @@ async function extrasFor(matchId: string, eaIds: string[]) {
           signal: AbortSignal.timeout(4000),
         });
         const u = (await res.json()) as { avatar?: string | null };
-        if (res.ok && u.avatar) avatars[eaId] = `https://cdn.discordapp.com/avatars/${discordId}/${u.avatar}.png?size=128`;
+        if (!res.ok || !u.avatar) return;
+        // Se incrusta como data URL: si satori tuviera que bajarla durante el render, no habría límite de tiempo
+        const img = await asDataUrl(`https://cdn.discordapp.com/avatars/${discordId}/${u.avatar}.png?size=128`);
+        if (img) avatars[eaId] = img;
       } catch {
         /* sin avatar: se dibuja la silueta */
       }
     }),
   );
   return { avatars, abandonos };
+}
+
+/** Fuentes y escudo propio: se bajan una vez por instancia y con límite de tiempo. */
+let assets: Promise<{ w600: ArrayBuffer; w800: ArrayBuffer; crest: string | null }> | null = null;
+function loadAssets(origin: string) {
+  if (!assets) {
+    const get = (p: string) => fetch(`${origin}${p}`, { signal: AbortSignal.timeout(5000) }).then((res) => {
+      if (!res.ok) throw new Error(`${p} ${res.status}`);
+      return res.arrayBuffer();
+    });
+    assets = Promise.all([
+      get("/fonts/barlow-condensed-600.woff"),
+      get("/fonts/barlow-condensed-800.woff"),
+      asDataUrl(`${origin}/escudo-cuadrado.png`),
+    ]).then(([w600, w800, crest]) => ({ w600, w800, crest }));
+    assets.catch(() => { assets = null; }); // si falla, se reintenta en la próxima petición
+  }
+  return assets;
 }
 
 /** PNG horizontal del partido para el embed de Discord: /api/match/<matchId>/image */
@@ -64,9 +87,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const oppId = Object.keys(raw.clubs).find((k) => k !== env.eaClubId);
   const oppCrestId = oppId ? (raw.clubs[oppId]?.details as { customKit?: { crestAssetId?: string } } | undefined)?.customKit?.crestAssetId : undefined;
 
-  const [w600, w800, opponentCrest, extra] = await Promise.all([
-    fetch(`${origin}/fonts/barlow-condensed-600.woff`).then((r) => r.arrayBuffer()),
-    fetch(`${origin}/fonts/barlow-condensed-800.woff`).then((r) => r.arrayBuffer()),
+  const [{ w600, w800, crest }, opponentCrest, extra] = await Promise.all([
+    loadAssets(origin),
     oppCrestId ? asDataUrl(EA_CREST(oppCrestId)) : Promise.resolve(null),
     extrasFor(id, v.players.map((p) => p.eaPlayerId)),
   ]);
@@ -76,7 +98,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const extras: CardExtras = { ...extra, opponentCrest };
   return new ImageResponse(
-    <MatchCard v={v} crestUrl={`${origin}/escudo-cuadrado.png`} utcOffset={env.utcOffset} threshold={env.leaverThreshold} extras={extras} />,
+    <MatchCard v={v} crestUrl={crest ?? `${origin}/escudo-cuadrado.png`} utcOffset={env.utcOffset} threshold={env.leaverThreshold} extras={extras} />,
     {
       width: CARD_WIDTH,
       height: cardLayout(v.players.length).height,

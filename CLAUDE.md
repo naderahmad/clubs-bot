@@ -86,6 +86,8 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
   `ABANDONÓ EN EL X'` (solo si el bot le puso roja en ese partido) y `EXPULSADO` (roja del juego). Escudo del rival desde
   `eafc24.content.easports.com/.../crests/256x256/l{crestAssetId}.png` (el mismo que usa myproclubs; no está bloqueado desde Vercel).
   Datos comunes en `lib/match-data.ts`. Si cambias el diseño, sube `IMAGE_VERSION`.
+  **Claves del partido** (`lib/match-insights.ts`): hasta 3 frases por reglas fijas (pases, entradas, tiros, goles en contra,
+  paradas), con umbrales calibrados con partidos reales. Salen en la imagen y en el embed; no salen en partidos con abandono.
   **La imagen va ADJUNTA al mensaje** (`postMatchEmbed`: el sync descarga el PNG y lo sube como `attachment://`). No usar la URL
   directa en el embed: tarda ~13 s en frío, la caché de Vercel es por región y Discord no espera más de ~10 s → salía sin imagen (2026-11-23).
   EA **no** da caras de los Pro, ni faltas ni amarillas del juego (solo `redcards`). `members/stats` sí da `proOverall`, `proHeight`.

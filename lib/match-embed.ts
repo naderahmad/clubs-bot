@@ -7,6 +7,7 @@ import { env } from "./env";
 import { postMessage, ts, NO_PINGS } from "./discord";
 import { matchView, TYPE_LABEL } from "./match-data";
 import { clubById } from "./clubs";
+import { matchInsights } from "./match-insights";
 
 export interface Abandono {
   discordId: string;
@@ -15,7 +16,7 @@ export interface Abandono {
 }
 
 /** Súbelo si cambia el diseño de la imagen (Discord y la CDN la cachean por URL). */
-const IMAGE_VERSION = 3;
+const IMAGE_VERSION = 4;
 
 const COLOR: Record<string, number> = {
   victoria: 0x2ecc71,
@@ -50,13 +51,17 @@ export function buildMatchEmbed(
     ...v.players.filter((p) => p.redcards > 0).map((p) => `🟥 **${p.name}** · expulsado en el partido`),
     ...(opts.abandonos ?? []).map((x) => `🟥 <@${x.discordId}> (${x.gamertag}) · se fue a mitad de partido (${x.pct}% jugado)`),
   ];
+  const keys = matchInsights(v).map((i) => (i.tone === "good" ? `✅ ${i.title}` : `⚠️ ${i.title} → ${i.tip}`));
 
   return {
     color: COLOR[v.result] ?? 0x1e6bff,
     author: { name: `${v.clubName} · ${TYPE_LABEL[type]}`, icon_url: `${opts.appUrl}${clubById(clubId).embedIcon}` },
     title: `${TITLE[v.result] ?? v.result}  ${v.goalsFor} - ${v.goalsAgainst}  vs ${v.opponent}`,
     description: [ts(v.playedAt, "F"), mvp].filter(Boolean).join(" · "),
-    fields: discipline.length ? [{ name: "⚖️ Disciplina", value: discipline.join("\n") }] : [],
+    fields: [
+      ...(keys.length ? [{ name: "📋 Claves del partido", value: keys.join("\n") }] : []),
+      ...(discipline.length ? [{ name: "⚖️ Disciplina", value: discipline.join("\n") }] : []),
+    ],
     image: { url: matchImageUrl(opts.appUrl, v.matchId) },
     footer: { text: `EA FC 27 Clubs · partido ${v.matchId}` },
     timestamp: v.playedAt.toISOString(),

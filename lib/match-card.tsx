@@ -6,10 +6,13 @@
  */
 import type { CSSProperties } from "react";
 import { pct, playerStatus, TYPE_LABEL, type MatchPlayer, type MatchView, type PlayerStatus } from "./match-data";
+import type { Insight } from "./match-insights";
 
 export const CARD_WIDTH = 1600;
 const PAD = 48;
 const HEADER_H = 250;
+const INSIGHTS_H = 150; // franja "Claves del partido" (con margen superior)
+const GOOD = "#2ecc71";
 
 /** Datos que no vienen de EA: avatares de Discord y rojas del bot por abandono. */
 export interface CardExtras {
@@ -61,13 +64,13 @@ const col: CSSProperties = { display: "flex", flexDirection: "column" };
 const cut = (s: string, len: number) => (s.length > len ? s.slice(0, len - 1) + "…" : s);
 
 /** Disposición de las cartas: hasta 6 en una fila; si hay más, dos filas. */
-export function cardLayout(count: number) {
+export function cardLayout(count: number, insights = 0) {
   const perRow = count <= 6 ? Math.max(count, 1) : Math.ceil(count / 2);
   const rows = Math.ceil(count / perRow) || 1;
   const gap = 20;
   const cardW = Math.min(290, Math.floor((CARD_WIDTH - PAD * 2 - gap * (perRow - 1)) / perRow));
   const cardH = Math.round(cardW * 1.5);
-  const height = HEADER_H + 44 + rows * cardH + (rows - 1) * gap + 56 + 150;
+  const height = HEADER_H + 44 + rows * cardH + (rows - 1) * gap + 56 + 150 + (insights ? INSIGHTS_H : 0);
   return { perRow, rows, gap, cardW, cardH, height };
 }
 
@@ -261,6 +264,41 @@ function PlayerCard({ p, st, mvp, avatar, w, h, t }: { p: MatchPlayer; st: Playe
   );
 }
 
+/* ---------- Claves del partido ---------- */
+
+function Insights({ items, t }: { items: Insight[]; t: CardTheme }) {
+  const gap = 20;
+  const w = Math.floor((CARD_WIDTH - PAD * 2 - gap * (items.length - 1)) / items.length);
+  return (
+    <div style={{ ...col, marginTop: 40, padding: `0 ${PAD}px` }}>
+      <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: 2, color: t.muted, marginBottom: 12 }}>CLAVES DEL PARTIDO</div>
+      <div style={{ ...row, columnGap: gap, alignItems: "stretch" }}>
+        {items.map((it, i) => {
+          const c = it.tone === "good" ? GOOD : AMBER;
+          return (
+            <div
+              key={i}
+              style={{
+                ...col,
+                justifyContent: "center",
+                width: w,
+                height: 86,
+                padding: "0 20px",
+                borderRadius: 12,
+                borderLeft: `6px solid ${c}`,
+                background: `rgba(${t.shade},0.6)`,
+              }}
+            >
+              <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.05, color: INK }}>{cut(it.title, 44)}</div>
+              {it.tip ? <div style={{ fontSize: 23, fontWeight: 600, lineHeight: 1.1, color: c, marginTop: 4 }}>{cut(it.tip, 52)}</div> : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Cabecera y comparativa ---------- */
 
 /** Nombres de club largos bajan de tamaño para caber al lado del escudo. */
@@ -303,8 +341,10 @@ export function MatchCard({
   threshold,
   extras,
   theme: t,
+  insights = [],
 }: {
   v: MatchView;
+  insights?: Insight[];
   theme: CardTheme;
   crestUrl: string;
   utcOffset: string;
@@ -312,7 +352,7 @@ export function MatchCard({
   extras: CardExtras;
 }) {
   const res = RESULT[v.result] ?? { label: v.result.toUpperCase(), color: t.accent };
-  const L = cardLayout(v.players.length);
+  const L = cardLayout(v.players.length, insights.length);
   const rows: MatchPlayer[][] = [];
   for (let i = 0; i < v.players.length; i += L.perRow) rows.push(v.players.slice(i, i + L.perRow));
   const abandonos = new Set(extras.abandonos);
@@ -378,6 +418,8 @@ export function MatchCard({
           </div>
         ))}
       </div>
+
+      {insights.length ? <Insights items={insights} t={t} /> : null}
 
       {/* Comparativa */}
       {v.them ? (

@@ -3,6 +3,7 @@ import { db } from "@/lib/supabase";
 import { env } from "@/lib/env";
 import { matchView } from "@/lib/match-data";
 import { clubById } from "@/lib/clubs";
+import { matchInsights } from "@/lib/match-insights";
 import { MatchCard, CARD_WIDTH, cardLayout, type CardExtras } from "@/lib/match-card";
 import type { EaMatch, EaMatchType } from "@/lib/ea";
 
@@ -110,11 +111,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (process.env.NODE_ENV !== "production") extra.abandonos.push(...url.searchParams.getAll("abandono"));
 
   const extras: CardExtras = { ...extra, opponentCrest };
+  const insights = matchInsights(v);
   return new ImageResponse(
-    <MatchCard v={v} theme={club.theme} crestUrl={crest ?? `${origin}${club.crest}`} utcOffset={env.utcOffset} threshold={env.leaverThreshold} extras={extras} />,
+    <MatchCard v={v} theme={club.theme} crestUrl={crest ?? `${origin}${club.crest}`} utcOffset={env.utcOffset} threshold={env.leaverThreshold} extras={extras} insights={insights} />,
     {
       width: CARD_WIDTH,
-      height: cardLayout(v.players.length).height,
+      height: cardLayout(v.players.length, insights.length).height,
       fonts: [
         { name: "Barlow Condensed", data: w600, weight: 600, style: "normal" },
         { name: "Barlow Condensed", data: w800, weight: 800, style: "normal" },

@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { db } from "@/lib/supabase";
 import { env } from "@/lib/env";
 import { matchView } from "@/lib/match-data";
+import { clubById } from "@/lib/clubs";
 import { MatchCard, CARD_WIDTH, cardLayout, type CardExtras } from "@/lib/match-card";
 import type { EaMatch, EaMatchType } from "@/lib/ea";
 
@@ -53,8 +54,8 @@ async function extrasFor(matchId: string, eaIds: string[]) {
   return { avatars, abandonos };
 }
 
-/** Fuentes y escudo propio: se bajan una vez por instancia y con límite de tiempo. */
-let assets: Promise<{ w600: ArrayBuffer; w800: ArrayBuffer; crest: string | null }> | null = null;
+/** Fuentes: se bajan una vez por instancia y con límite de tiempo. */
+let assets: Promise<{ w600: ArrayBuffer; w800: ArrayBuffer }> | null = null;
 function loadAssets(origin: string) {
   if (!assets) {
     const get = (p: string) => fetch(`${origin}${p}`, { signal: AbortSignal.timeout(5000) }).then((res) => {
@@ -64,11 +65,21 @@ function loadAssets(origin: string) {
     assets = Promise.all([
       get("/fonts/barlow-condensed-600.woff"),
       get("/fonts/barlow-condensed-800.woff"),
-      asDataUrl(`${origin}/escudo-cuadrado.png`),
-    ]).then(([w600, w800, crest]) => ({ w600, w800, crest }));
+    ]).then(([w600, w800]) => ({ w600, w800 }));
     assets.catch(() => { assets = null; }); // si falla, se reintenta en la próxima petición
   }
   return assets;
+}
+
+/** Escudo propio de cada club como data URL (una vez por instancia; si falla se reintenta). */
+const crests = new Map<string, Promise<string | null>>();
+function loadCrest(origin: string, path: string) {
+  let p = crests.get(path);
+  if (!p) {
+    p = asDataUrl(`${origin}${path}`).then((x) => { if (!x) crests.delete(path); return x; });
+    crests.set(path, p);
+  }
+  return p;
 }
 
 /** PNG horizontal del partido para el embed de Discord: /api/match/<matchId>/image */
@@ -76,19 +87,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const { id } = await params;
   if (!/^\d+$/.test(id)) return new Response("ID inválido", { status: 400 });
 
-  const { data, error } = await db().from("matches").select("match_type, raw").eq("match_id", id).maybeSingle();
+  const { data, error } = await db().from("matches").select("match_type, raw, club_id").eq("match_id", id).maybeSingle();
   if (error) return new Response("Error de base de datos", { status: 500 });
   if (!data) return new Response("Partido no encontrado", { status: 404 });
 
   const raw = data.raw as EaMatch;
-  const v = matchView(raw, data.match_type as EaMatchType, env.eaClubId);
+  const club = clubById(data.club_id);
+  const v = matchView(raw, data.match_type as EaMatchType, club.id);
   const url = new URL(req.url);
   const origin = url.origin;
-  const oppId = Object.keys(raw.clubs).find((k) => k !== env.eaClubId);
+  const oppId = Object.keys(raw.clubs).find((k) => k !== club.id);
   const oppCrestId = oppId ? (raw.clubs[oppId]?.details as { customKit?: { crestAssetId?: string } } | undefined)?.customKit?.crestAssetId : undefined;
 
-  const [{ w600, w800, crest }, opponentCrest, extra] = await Promise.all([
+  const [{ w600, w800 }, crest, opponentCrest, extra] = await Promise.all([
     loadAssets(origin),
+    loadCrest(origin, club.crest),
     oppCrestId ? asDataUrl(EA_CREST(oppCrestId)) : Promise.resolve(null),
     extrasFor(id, v.players.map((p) => p.eaPlayerId)),
   ]);
@@ -98,7 +111,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const extras: CardExtras = { ...extra, opponentCrest };
   return new ImageResponse(
-    <MatchCard v={v} crestUrl={crest ?? `${origin}/escudo-cuadrado.png`} utcOffset={env.utcOffset} threshold={env.leaverThreshold} extras={extras} />,
+    <MatchCard v={v} theme={club.theme} crestUrl={crest ?? `${origin}${club.crest}`} utcOffset={env.utcOffset} threshold={env.leaverThreshold} extras={extras} />,
     {
       width: CARD_WIDTH,
       height: cardLayout(v.players.length).height,

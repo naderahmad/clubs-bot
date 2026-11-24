@@ -35,6 +35,7 @@ create table if not exists matches (
   match_id       text primary key,
   played_at      timestamptz not null,
   match_type     text not null,      -- leagueMatch | friendlyMatch | playoffMatch
+  club_id        text not null default '621507',  -- club nuestro que jugó (ver lib/clubs.ts)
   goals_for      int,
   goals_against  int,
   result         text,               -- victoria | derrota | empate | victoria_dnf | derrota_dnf

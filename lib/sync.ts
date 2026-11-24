@@ -3,11 +3,13 @@ import { db } from "./supabase";
 import { getMatches, getOverallStats, parseResult, type EaMatch, type EaMatchType } from "./ea";
 import { postMessage, mention, ts, NO_PINGS } from "./discord";
 import { buildMatchEmbed, postMatchEmbed, type Abandono } from "./match-embed";
+import { CLUBS, PRIMARY_CLUB } from "./clubs";
 
 const MATCH_TYPES: EaMatchType[] = ["leagueMatch", "friendlyMatch"];
 interface Summary {
   fetched: number;
   newMatches: number;
+  backfilled: number;
   reds: number;
   yellows: number;
   closedSessions: number;
@@ -17,32 +19,43 @@ interface Summary {
 
 /** Paso único del cron: trae partidos, saca tarjetas, cierra convocatorias y manda recordatorios. */
 export async function runSync({ dry = false } = {}) {
-  const s: Summary = { fetched: 0, newMatches: 0, reds: 0, yellows: 0, closedSessions: 0, reminders: 0, errors: [] };
-  const clubId = env.eaClubId;
+  const s: Summary = { fetched: 0, newMatches: 0, backfilled: 0, reds: 0, yellows: 0, closedSessions: 0, reminders: 0, errors: [] };
 
-  // 1. Traer los últimos partidos de EA
-  const fetched: Array<{ m: EaMatch; type: EaMatchType }> = [];
-  for (const type of MATCH_TYPES) {
-    try {
-      for (const m of await getMatches(clubId, type, env.eaPlatform)) fetched.push({ m, type });
-    } catch (e) {
-      s.errors.push(`EA ${type}: ${String(e)}`);
+  // 1. Traer los últimos partidos de EA de cada club
+  const fetched: Array<{ m: EaMatch; type: EaMatchType; clubId: string }> = [];
+  for (const club of CLUBS) {
+    for (const type of MATCH_TYPES) {
+      try {
+        for (const m of await getMatches(club.id, type, env.eaPlatform)) fetched.push({ m, type, clubId: club.id });
+      } catch (e) {
+        s.errors.push(`EA ${club.name} ${type}: ${String(e)}`);
+      }
     }
   }
   s.fetched = fetched.length;
-  if (dry) return { ...s, sample: fetched.slice(0, 3).map(({ m, type }) => summarizeMatch(m, type, clubId)) };
+  if (dry) return { ...s, sample: fetched.slice(0, 3).map(({ m, type, clubId }) => summarizeMatch(m, type, clubId)) };
 
-  // 2. Guardar los nuevos
+  // 2. Guardar los nuevos (si los dos clubes jugaran entre sí, el partido se guarda una vez)
   const ids = fetched.map((f) => f.m.matchId);
   const { data: existing } = ids.length
     ? await db().from("matches").select("match_id").in("match_id", ids)
     : { data: [] as { match_id: string }[] };
   const known = new Set((existing ?? []).map((r) => r.match_id));
-  const fresh = fetched.filter((f) => !known.has(f.m.matchId)).sort((a, b) => a.m.timestamp - b.m.timestamp);
+  const fresh = fetched
+    .filter((f) => !known.has(f.m.matchId) && !!known.add(f.m.matchId))
+    .sort((a, b) => a.m.timestamp - b.m.timestamp);
 
-  for (const { m, type } of fresh) {
+  // Club recién añadido (sin partidos guardados): se guarda su historial sin publicarlo ni sacar tarjetas
+  const silent = new Set<string>();
+  for (const club of CLUBS) {
+    const { count } = await db().from("matches").select("match_id", { count: "exact", head: true }).eq("club_id", club.id);
+    if (!count) silent.add(club.id);
+  }
+
+  for (const { m, type, clubId } of fresh) {
     try {
       await saveMatch(m, type, clubId);
+      if (silent.has(clubId)) { s.backfilled++; continue; }
       s.newMatches++;
       s.reds += await processMatch(m, type, clubId);
     } catch (e) {
@@ -50,9 +63,9 @@ export async function runSync({ dry = false } = {}) {
     }
   }
 
-  // 2b. División actual del club (para la web)
+  // 2b. Skill Rating del club principal (para la web)
   try {
-    await syncClubStatus(clubId);
+    await syncClubStatus(PRIMARY_CLUB.id);
   } catch (e) {
     s.errors.push(`division: ${String(e)}`);
   }
@@ -107,6 +120,7 @@ async function saveMatch(m: EaMatch, type: EaMatchType, clubId: string) {
     match_id: x.matchId,
     played_at: x.playedAt.toISOString(),
     match_type: type,
+    club_id: clubId,
     goals_for: x.goalsFor,
     goals_against: x.goalsAgainst,
     result: x.result,
@@ -200,7 +214,7 @@ async function processMatch(m: EaMatch, type: EaMatchType, clubId: string): Prom
     }
   }
 
-  const embed = buildMatchEmbed(m, type, clubId, { appUrl: env.appUrl, crestUrl: env.crestUrl, abandonos });
+  const embed = buildMatchEmbed(m, type, clubId, { appUrl: env.appUrl, abandonos });
   // Precalentar la imagen para que Discord la encuentre ya generada (si falla, el embed sale igual)
   await postMatchEmbed(embed, m.matchId);
   return abandonos.length;

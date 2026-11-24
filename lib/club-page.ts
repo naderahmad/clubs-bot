@@ -4,6 +4,7 @@
  */
 import { db } from "./supabase";
 import { POS } from "./match-data";
+import { PRIMARY_CLUB } from "./clubs";
 
 export const DISCORD_INVITE = "https://discord.gg/Bc3BVhmJC2";
 const INVITE_CODE = "Bc3BVhmJC2";
@@ -70,8 +71,12 @@ export async function getClubPageData(): Promise<ClubPageData> {
       db()
         .from("matches")
         .select("match_id, played_at, match_type, goals_for, goals_against, result, opponent")
+        .eq("club_id", PRIMARY_CLUB.id)
         .order("played_at", { ascending: false }),
-      db().from("match_players").select("ea_player_id, gamertag, pos, seconds_played, rating, goals, assists, mom"),
+      db()
+        .from("match_players")
+        .select("ea_player_id, gamertag, pos, seconds_played, rating, goals, assists, mom, matches!inner(club_id)")
+        .eq("matches.club_id", PRIMARY_CLUB.id),
       db().from("club_status").select("current_division, skill_rating").eq("id", 1).maybeSingle(),
     ]);
     const division = status?.current_division ? { current: status.current_division, skillRating: status.skill_rating ?? null } : null;

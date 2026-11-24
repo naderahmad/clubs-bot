@@ -6,6 +6,9 @@ Uno de ellos hace stream y tiene una comunidad pequeña. Problema a resolver: ju
 mitad de partido o que confirman y no juegan.
 
 - Club: **STARLINK FCX**, PS5 (crossplay), `clubId` **621507**, plataforma `common-gen5`.
+- Segundo club (mismos jugadores): **TITANS CR1OLLO**, `clubId` **968764**. Los clubes se configuran en `lib/clubs.ts`
+  (escudo, icono del embed y colores de la imagen); `matches.club_id` dice de cuál es cada partido. Comparten canal,
+  convocatorias y tarjetas. Un club recién añadido guarda su historial sin publicarlo. La web solo muestra el principal.
 - Referencia visual para la web (fase 2): https://myproclubs.com/STARLINK%20FCX/621507-5
   (encabezado con escudo + skill rating, líderes del club, historial V/E/D, plantilla por posición con rating).
   No tiene asistencia ni disciplina: esa es nuestra diferencia.

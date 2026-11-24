@@ -18,9 +18,21 @@ export interface CardExtras {
   opponentCrest: string | null; // data URL del escudo del rival en el juego
 }
 
+/** Colores que cambian por club (ver lib/clubs.ts). */
+export interface CardTheme {
+  bg: string; // fondo de la lámina
+  header: string; // banda de la cabecera (mismo tono que el fondo del escudo)
+  card: string; // carta normal
+  cardBorder: string;
+  accent: string; // barras de la comparativa
+  muted: string; // texto secundario
+  mutedRgb: string; // "r,g,b" del secundario, para transparencias
+  lineRgb: string; // "r,g,b" de separadores y aro del avatar
+  shade: string; // "r,g,b" oscuro de la franja de estado
+  opponentInk: string;
+}
+
 const INK = "#f4f7ff";
-const MUTED = "#a9bde6"; // secundario, tintado del azul del fondo
-const BLUE = "#3d7bff";
 const GOLD_INK = "#2a1b00";
 const RED = "#ff4d4f";
 const AMBER = "#ffb547";
@@ -98,13 +110,13 @@ function Silhouette({ size, color }: { size: number; color: string }) {
 
 /* ---------- Carta de jugador ---------- */
 
-const STATUS_STYLE: Record<PlayerStatus["kind"], { bg: string; fg: string }> = {
-  completo: { bg: "rgba(8,16,40,0.55)", fg: MUTED },
-  no_jugo: { bg: "rgba(8,16,40,0.7)", fg: MUTED },
+const statusStyle = (t: CardTheme): Record<PlayerStatus["kind"], { bg: string; fg: string }> => ({
+  completo: { bg: `rgba(${t.shade},0.55)`, fg: t.muted },
+  no_jugo: { bg: `rgba(${t.shade},0.7)`, fg: t.muted },
   parcial: { bg: "rgba(255,181,71,0.18)", fg: AMBER },
   abandono: { bg: RED, fg: "#ffffff" },
   expulsado: { bg: RED, fg: "#ffffff" },
-};
+});
 
 function statusText(st: PlayerStatus, minutes: number) {
   switch (st.kind) {
@@ -116,16 +128,16 @@ function statusText(st: PlayerStatus, minutes: number) {
   }
 }
 
-function Stat({ label, value, s, gold }: { label: string; value: string; s: number; gold: boolean }) {
+function Stat({ label, value, s, gold, t }: { label: string; value: string; s: number; gold: boolean; t: CardTheme }) {
   return (
     <div style={{ ...col, alignItems: "center", width: "33.33%" }}>
-      <div style={{ fontSize: 18 * s, fontWeight: 600, letterSpacing: 1, color: gold ? "rgba(42,27,0,0.72)" : MUTED }}>{label}</div>
+      <div style={{ fontSize: 18 * s, fontWeight: 600, letterSpacing: 1, color: gold ? "rgba(42,27,0,0.72)" : t.muted }}>{label}</div>
       <div style={{ fontSize: 32 * s, fontWeight: 800, lineHeight: 1.05, color: gold ? GOLD_INK : INK }}>{value}</div>
     </div>
   );
 }
 
-function PlayerCard({ p, st, mvp, avatar, w, h }: { p: MatchPlayer; st: PlayerStatus; mvp: boolean; avatar?: string; w: number; h: number }) {
+function PlayerCard({ p, st, mvp, avatar, w, h, t }: { p: MatchPlayer; st: PlayerStatus; mvp: boolean; avatar?: string; w: number; h: number; t: CardTheme }) {
   const s = w / 260;
   const gold = mvp && st.kind !== "no_jugo";
   const ink = gold ? GOLD_INK : INK;
@@ -138,7 +150,7 @@ function PlayerCard({ p, st, mvp, avatar, w, h }: { p: MatchPlayer; st: PlayerSt
       ? [["PAR", String(p.saves)], ["GOL", String(p.goals)], ["AST", String(p.assists)]]
       : [["GOL", String(p.goals)], ["AST", String(p.assists)], ["TIR", String(p.shots)]];
   stats.push(["PASES", String(p.passes)], ["PAS%", pass === null ? "-" : `${pass}`], ["ENT%", tackle === null ? "-" : `${tackle}`]);
-  const band = STATUS_STYLE[st.kind];
+  const band = statusStyle(t)[st.kind];
   const avatarSize = 96 * s;
 
   return (
@@ -153,8 +165,8 @@ function PlayerCard({ p, st, mvp, avatar, w, h }: { p: MatchPlayer; st: PlayerSt
           ? "linear-gradient(165deg, #fff4c2 0%, #efcb63 35%, #c4922f 72%, #8a6418 100%)"
           : red
             ? "linear-gradient(165deg, #3a2a5e 0%, #1d1c45 45%, #12122e 100%)"
-            : "linear-gradient(165deg, #2c5cc4 0%, #173679 42%, #0d1f4a 78%, #0a1838 100%)",
-        border: gold ? "3px solid #fff1b8" : red ? `3px solid ${RED}` : "2px solid #4f82f5",
+            : t.card,
+        border: gold ? "3px solid #fff1b8" : red ? `3px solid ${RED}` : `2px solid ${t.cardBorder}`,
         boxShadow: "0 14px 28px rgba(0,0,0,0.45)",
         opacity: dim ? 0.5 : 1,
       }}
@@ -174,15 +186,15 @@ function PlayerCard({ p, st, mvp, avatar, w, h }: { p: MatchPlayer; st: PlayerSt
               height: avatarSize,
               borderRadius: 999,
               overflow: "hidden",
-              background: gold ? "rgba(42,27,0,0.18)" : "rgba(5,12,32,0.45)",
-              border: gold ? "2px solid rgba(42,27,0,0.35)" : "2px solid rgba(120,165,255,0.45)",
+              background: gold ? "rgba(42,27,0,0.18)" : `rgba(${t.shade},0.6)`,
+              border: gold ? "2px solid rgba(42,27,0,0.35)" : `2px solid rgba(${t.lineRgb},0.45)`,
             }}
           >
             {avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={avatar} width={avatarSize} height={avatarSize} style={{ objectFit: "cover" }} />
             ) : (
-              <Silhouette size={avatarSize * 0.78} color={gold ? "rgba(42,27,0,0.45)" : "rgba(150,185,255,0.5)"} />
+              <Silhouette size={avatarSize * 0.78} color={gold ? "rgba(42,27,0,0.45)" : `rgba(${t.lineRgb},0.5)`} />
             )}
           </div>
         </div>
@@ -219,12 +231,12 @@ function PlayerCard({ p, st, mvp, avatar, w, h }: { p: MatchPlayer; st: PlayerSt
         >
           {cut(p.name, 16)}
         </div>
-        <div style={{ height: 2, background: gold ? "rgba(42,27,0,0.3)" : "rgba(120,165,255,0.35)", margin: `${8 * s}px ${4 * s}px ${10 * s}px` }} />
+        <div style={{ height: 2, background: gold ? "rgba(42,27,0,0.3)" : `rgba(${t.lineRgb},0.35)`, margin: `${8 * s}px ${4 * s}px ${10 * s}px` }} />
 
         {/* Stats del partido */}
         <div style={{ ...row, flexWrap: "wrap", rowGap: 10 * s }}>
           {stats.map(([l, v]) => (
-            <Stat key={l} label={l} value={v} s={s} gold={gold} />
+            <Stat key={l} label={l} value={v} s={s} gold={gold} t={t} />
           ))}
         </div>
       </div>
@@ -254,31 +266,31 @@ function PlayerCard({ p, st, mvp, avatar, w, h }: { p: MatchPlayer; st: PlayerSt
 /** Nombres de club largos bajan de tamaño para caber al lado del escudo. */
 const nameSize = (name: string) => (name.length <= 12 ? 50 : name.length <= 15 ? 44 : 38);
 
-function Crest({ src, fallback, size }: { src: string | null; fallback: string; size: number }) {
+function Crest({ src, fallback, size, t }: { src: string | null; fallback: string; size: number; t: CardTheme }) {
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={src} width={size} height={size} style={{ objectFit: "contain", flexShrink: 0 }} />;
   }
   return (
-    <div style={{ ...row, justifyContent: "center", width: size, height: size, borderRadius: 999, border: "3px solid rgba(169,189,230,0.35)", fontSize: size * 0.38, fontWeight: 800, color: MUTED }}>
+    <div style={{ ...row, justifyContent: "center", width: size, height: size, borderRadius: 999, border: `3px solid rgba(${t.mutedRgb},0.35)`, fontSize: size * 0.38, fontWeight: 800, color: t.muted }}>
       {fallback}
     </div>
   );
 }
 
-function CompareBar({ label, a, b, unit = "" }: { label: string; a: number; b: number; unit?: string }) {
+function CompareBar({ label, a, b, unit = "", t }: { label: string; a: number; b: number; unit?: string; t: CardTheme }) {
   const total = a + b;
   const share = total > 0 ? a / total : 0;
   const lead = a > b ? "us" : b > a ? "them" : "tie";
   return (
     <div style={{ ...col, width: 272 }}>
       <div style={{ ...row, justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div style={{ fontSize: 40, fontWeight: 800, lineHeight: 1, color: lead === "them" ? MUTED : INK }}>{`${a}${unit}`}</div>
-        <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: 2, color: MUTED, marginBottom: 4 }}>{label}</div>
-        <div style={{ fontSize: 40, fontWeight: 800, lineHeight: 1, color: lead === "us" ? MUTED : INK }}>{`${b}${unit}`}</div>
+        <div style={{ fontSize: 40, fontWeight: 800, lineHeight: 1, color: lead === "them" ? t.muted : INK }}>{`${a}${unit}`}</div>
+        <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: 2, color: t.muted, marginBottom: 4 }}>{label}</div>
+        <div style={{ fontSize: 40, fontWeight: 800, lineHeight: 1, color: lead === "us" ? t.muted : INK }}>{`${b}${unit}`}</div>
       </div>
-      <div style={{ ...row, height: 10, borderRadius: 5, overflow: "hidden", background: "rgba(169,189,230,0.18)", marginTop: 10 }}>
-        <div style={{ width: `${Math.round(share * 100)}%`, height: 10, background: BLUE }} />
+      <div style={{ ...row, height: 10, borderRadius: 5, overflow: "hidden", background: `rgba(${t.mutedRgb},0.18)`, marginTop: 10 }}>
+        <div style={{ width: `${Math.round(share * 100)}%`, height: 10, background: t.accent }} />
       </div>
     </div>
   );
@@ -290,14 +302,16 @@ export function MatchCard({
   utcOffset,
   threshold,
   extras,
+  theme: t,
 }: {
   v: MatchView;
+  theme: CardTheme;
   crestUrl: string;
   utcOffset: string;
   threshold: number;
   extras: CardExtras;
 }) {
-  const res = RESULT[v.result] ?? { label: v.result.toUpperCase(), color: BLUE };
+  const res = RESULT[v.result] ?? { label: v.result.toUpperCase(), color: t.accent };
   const L = cardLayout(v.players.length);
   const rows: MatchPlayer[][] = [];
   for (let i = 0; i < v.players.length; i += L.perRow) rows.push(v.players.slice(i, i + L.perRow));
@@ -317,11 +331,11 @@ export function MatchCard({
         height: L.height,
         fontFamily: "Barlow Condensed",
         color: INK,
-        background: "linear-gradient(180deg, #0b1d4a 0%, #071434 45%, #040b20 100%)",
+        background: t.bg,
       }}
     >
       {/* Cabecera: banda del color de fondo del escudo para que se funda con él */}
-      <div style={{ ...row, height: HEADER_H, padding: `0 ${PAD}px`, background: "#01040d", borderBottom: `4px solid ${res.color}` }}>
+      <div style={{ ...row, height: HEADER_H, padding: `0 ${PAD}px`, background: t.header, borderBottom: `4px solid ${res.color}` }}>
         <div style={{ ...row, width: sideW, flexShrink: 0, columnGap: 18 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -336,12 +350,12 @@ export function MatchCard({
         <div style={{ ...col, alignItems: "center", flexGrow: 1 }}>
           <div style={{ fontSize: 132, fontWeight: 800, lineHeight: 0.95, letterSpacing: -1 }}>{`${v.goalsFor} – ${v.goalsAgainst}`}</div>
           <div style={{ fontSize: 26, fontWeight: 800, letterSpacing: 2.5, color: "#04101f", background: res.color, borderRadius: 8, padding: "2px 16px", marginTop: 12 }}>{res.label}</div>
-          <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 1, color: MUTED, marginTop: 8 }}>{`${TYPE_LABEL[v.type]} · ${localDate(v.playedAt, utcOffset)}`}</div>
+          <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 1, color: t.muted, marginTop: 8 }}>{`${TYPE_LABEL[v.type]} · ${localDate(v.playedAt, utcOffset)}`}</div>
         </div>
 
         <div style={{ ...row, width: sideW, flexShrink: 0, columnGap: 18 }}>
-          <div style={{ ...row, flexGrow: 1, fontSize: nameSize(v.opponent), fontWeight: 800, lineHeight: 1, color: "#d5dff5", whiteSpace: "nowrap" }}>{cut(v.opponent, 18)}</div>
-          <Crest src={extras.opponentCrest} fallback={initials || "?"} size={160} />
+          <div style={{ ...row, flexGrow: 1, fontSize: nameSize(v.opponent), fontWeight: 800, lineHeight: 1, color: t.opponentInk, whiteSpace: "nowrap" }}>{cut(v.opponent, 18)}</div>
+          <Crest src={extras.opponentCrest} fallback={initials || "?"} size={160} t={t} />
         </div>
       </div>
 
@@ -358,6 +372,7 @@ export function MatchCard({
                 avatar={extras.avatars[p.eaPlayerId]}
                 w={L.cardW}
                 h={L.cardH}
+                t={t}
               />
             ))}
           </div>
@@ -367,16 +382,16 @@ export function MatchCard({
       {/* Comparativa */}
       {v.them ? (
         <div style={{ ...col, marginTop: "auto", padding: `0 ${PAD}px 40px` }}>
-          <div style={{ ...row, justifyContent: "space-between", fontSize: 22, fontWeight: 600, letterSpacing: 2, color: MUTED, marginBottom: 14 }}>
+          <div style={{ ...row, justifyContent: "space-between", fontSize: 22, fontWeight: 600, letterSpacing: 2, color: t.muted, marginBottom: 14 }}>
             <div>{v.clubName.toUpperCase()}</div>
             <div>{cut(v.opponent.toUpperCase(), 24)}</div>
           </div>
           <div style={{ ...row, justifyContent: "space-between" }}>
-            <CompareBar label="TIROS" a={v.us.shots} b={v.them.shots} />
-            <CompareBar label="PASES" a={passA} b={passB} unit="%" />
-            <CompareBar label="ENTRADAS" a={tackA} b={tackB} unit="%" />
-            <CompareBar label="PARADAS" a={v.us.saves} b={v.them.saves} />
-            <CompareBar label="ROJAS" a={v.us.reds} b={v.them.reds} />
+            <CompareBar label="TIROS" a={v.us.shots} b={v.them.shots} t={t} />
+            <CompareBar label="PASES" a={passA} b={passB} unit="%" t={t} />
+            <CompareBar label="ENTRADAS" a={tackA} b={tackB} unit="%" t={t} />
+            <CompareBar label="PARADAS" a={v.us.saves} b={v.them.saves} t={t} />
+            <CompareBar label="ROJAS" a={v.us.reds} b={v.them.reds} t={t} />
           </div>
         </div>
       ) : null}

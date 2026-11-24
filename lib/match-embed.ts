@@ -6,6 +6,7 @@ import type { EaMatch, EaMatchType } from "./ea";
 import { env } from "./env";
 import { postMessage, ts, NO_PINGS } from "./discord";
 import { matchView, TYPE_LABEL } from "./match-data";
+import { clubById } from "./clubs";
 
 export interface Abandono {
   discordId: string;
@@ -39,7 +40,7 @@ export function buildMatchEmbed(
   m: EaMatch,
   type: EaMatchType,
   clubId: string,
-  opts: { appUrl: string; crestUrl: string; abandonos?: Abandono[] },
+  opts: { appUrl: string; abandonos?: Abandono[] },
 ) {
   const v = matchView(m, type, clubId);
   const mvp = v.mvp ? `⭐ **${v.mvp.name}** (${v.mvp.rating.toFixed(1)})` : "";
@@ -52,7 +53,7 @@ export function buildMatchEmbed(
 
   return {
     color: COLOR[v.result] ?? 0x1e6bff,
-    author: { name: `${v.clubName} · ${TYPE_LABEL[type]}`, icon_url: opts.crestUrl },
+    author: { name: `${v.clubName} · ${TYPE_LABEL[type]}`, icon_url: `${opts.appUrl}${clubById(clubId).embedIcon}` },
     title: `${TITLE[v.result] ?? v.result}  ${v.goalsFor} - ${v.goalsAgainst}  vs ${v.opponent}`,
     description: [ts(v.playedAt, "F"), mvp].filter(Boolean).join(" · "),
     fields: discipline.length ? [{ name: "⚖️ Disciplina", value: discipline.join("\n") }] : [],

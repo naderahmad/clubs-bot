@@ -5,7 +5,8 @@ import { postMessage, mention, ts, NO_PINGS } from "./discord";
 import { buildMatchEmbed, postMatchEmbed, type Abandono } from "./match-embed";
 import { CLUBS, PRIMARY_CLUB } from "./clubs";
 
-const MATCH_TYPES: EaMatchType[] = ["leagueMatch", "friendlyMatch"];
+// Playoff incluido: el 2026-11-26 el club jugó 5 de playoff y no se publicaron porque faltaba aquí
+const MATCH_TYPES: EaMatchType[] = ["leagueMatch", "friendlyMatch", "playoffMatch"];
 interface Summary {
   fetched: number;
   newMatches: number;

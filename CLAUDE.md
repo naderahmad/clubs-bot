@@ -48,7 +48,7 @@ Base `https://proclubs.ea.com/api/fc/`, GET sin auth. Verificado funcionando con
   - **Máximo 10 partidos, sin paginación** → hay que consultar seguido y guardar.
   - `players[clubId][playerId]` trae `playername`, `pos`, `rating`, `goals`, `assists`, `mom`, `secondsPlayed`, etc.
   - Resultado liga: `1` victoria, `2` derrota, `4` empate, `16385` victoria por abandono rival, `10` derrota por abandono.
-  - Amistosos: `result` = `"0"`, se deduce por goles.
+  - Amistosos: `result` = `"0"`, se deduce por goles. Playoff usa los mismos códigos que liga (el sync consulta los 3 tipos).
 - Casi todos los valores vienen como strings.
 - Akamai bloquea clientes que no parecen navegador (403 o timeout); `curl` simple bloqueado. Usar headers tipo Chrome (ver `lib/ea.ts`).
 - Los IDs de club cambian cada juego anual. Identificar jugadores por `playerId` (estable), no por gamertag.
